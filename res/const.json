@@ -1,0 +1,24 @@
+{
+  "command_prefix": [
+    "엘 ",
+    "져 ",
+    "디 ",
+    "el "
+  ],
+  "role": {
+    "enifia": 875303102004203541
+  },
+  "text_channel": {
+    "default": 877530625949708290,
+    "afk": 875327816420458537
+  },
+  "voice_channel": {
+    "afk": 875327679862296586
+  },
+  "currency": {
+    "default": " 엘리트"
+  },
+  "emoji": {
+    "money_with_wings": "\uD83D\uDCB8"
+  }
+}
