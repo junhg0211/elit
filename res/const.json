@@ -8,6 +8,9 @@
   "role": {
     "enifia": 875303102004203541
   },
+  "category_channel": {
+    "farm": 877726558675161168
+  },
   "text_channel": {
     "default": 877530625949708290,
     "afk": 875327816420458537
@@ -19,7 +22,8 @@
     "default": " 엘리트"
   },
   "emoji": {
-    "money_with_wings": "\uD83D\uDCB8"
+    "money_with_wings": "\uD83D\uDCB8",
+    "white_check_mark": "✅"
   },
   "color": {
     "elit": 8500470

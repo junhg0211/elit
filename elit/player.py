@@ -1,11 +1,21 @@
+from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
-from elit import get_item_object
+from elit import get_item_object, Farm
+from elit.exception import CapacityError
 from util import database
 
 
 class Player:
     def __init__(self, discord_id: int):
+        """
+        게임 플레이어로써의 유저 객체입니다.
+        아이디를 입력하면 데이터베이스에서 자동으로 해당 아이디에 해당하는 플레이어 정보를 fetch하여 객체를 생성합니다.
+
+        :param discord_id: 유저 객체의 아이디.
+        :exception ValueError: `discord_id`에 해당하는 플레이어가 데이터베이스에 존재하지 않을 때 발생합니다.
+        """
+
         self.discord_id = discord_id
 
         with database.cursor(DictCursor) as cursor:
@@ -25,6 +35,26 @@ class Player:
         with database.cursor() as cursor:
             cursor.execute('UPDATE player SET money = %s WHERE discord_id = %s', (amount, self.discord_id))
         return self
+
+    def get_user(self, bot: Bot):
+        return bot.get_user(self.discord_id)
+
+    async def leave_farm(self, bot: Bot):
+        farm_channel = Farm(self.farm_id).get_channel(bot)
+        user = self.get_user(bot)
+        await farm_channel.send(f':people_wrestling: {user.mention}님이 밭을 떠났습니다!')
+        self.farm_id = None
+
+    async def join(self, farm: Farm, bot: Bot):
+        farm_channel = farm.get_channel(bot)
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE player SET farm_id = %s WHERE discord_id = %s', (farm.id, self.discord_id))
+
+        if farm.capacity <= farm.member_count():
+            raise CapacityError(f'이 밭(id: {farm.id})은 {farm.capacity}명 초과로 구성원을 받을 수 없습니다.')
+
+        user = self.get_user(bot)
+        await farm_channel.send(f':people_wrestling: 새로운 구성원 {user.mention}님을 반겨주세요!')
 
 
 class PlayerInventory:

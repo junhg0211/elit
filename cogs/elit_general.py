@@ -3,7 +3,7 @@ from asyncio import wait, TimeoutError as AsyncioTimeoutError
 from discord import User, Reaction, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole
 
-from elit import Player, new_player, get_money_leaderboard
+from elit import Player, new_player, get_money_leaderboard, Farm, next_farm_id, new_farm
 from util import const, eul_reul, i_ga, na_ina
 
 
@@ -101,7 +101,7 @@ class ElitGeneral(Cog):
                 user = f'`ID: {leader_raw["discord_id"]}`'
             else:
                 user = user.display_name
-            leaderboard_text.append(f'{i+1}위. **{user}** {leader_raw["money"]}{const("currency.default")}')
+            leaderboard_text.append(f'{i + 1}위. **{user}** {leader_raw["money"]}{const("currency.default")}')
         embed = Embed(title='소지금 순위 (상위 10명)', description='\n'.join(leaderboard_text), color=const('color.elit'))
         await ctx.send(embed=embed)
 
@@ -118,6 +118,73 @@ class ElitGeneral(Cog):
         player.set_money(amount)
         await ctx.send(f':spy: __{user.display_name}__님의 소지금을 '
                        f'__{player.money}{const("currency.default")}__로 설정했습니다.')
+
+    @group(aliases=['밭'],
+           description='자신의 밭 정보를 확인합니다.',
+           invoke_without_command=True)
+    async def farm(self, ctx: Context):
+        try:
+            player = Player(ctx.author.id)
+        except ValueError:
+            player = new_player(ctx.author.id)
+
+        if player.farm_id is None:
+            await ctx.send(f':park: **{ctx.author.mention}님의 명의로 된 밭이 존재하지 않습니다.** '
+                           f'밭을 가지고 있는 친구가 `엘 밭 초대` 명령어를 사용해서 *밭에 __{ctx.author.display_name}__님을 초대*하거나 '
+                           f'*본인 명의의 밭을 새로 만들 수* 있습니다. 본인 명의의 밭을 새로 만들기 위해서는 `엘 밭 생성`을 입력해주세요.')
+            return
+
+        try:
+            farm = Farm(player.farm_id)
+        except ValueError:
+            await ctx.send(':park: **시스템 상 예상치 못한 오류가 발생했습니다.** '
+                           '이 문제를 해결하기 위해서는 전문가가 있어야 합니다. 관리자에게 보고해주세요.')
+            return
+
+        await ctx.send(f'{farm.id, farm.channel_id, farm.owner_id, farm.size, farm.capacity}')
+
+    @farm.command(aliases=['생성'],
+                  description='새로운 밭을 생성합니다.')
+    async def create(self, ctx: Context):
+        try:
+            player = Player(ctx.author.id)
+        except ValueError:
+            player = new_player(ctx.author.id)
+
+        if player.farm_id is not None:
+            confirmation = await ctx.send(
+                f':park: **{ctx.author.mention}, 멈춰!!** '
+                f'__{ctx.author.display_name}__님이 소속되어있는 밭이 이미 있습니다. '
+                f'밭을 새로 만들면 이미 가입해있는 밭에서 탈퇴되고, 밭에 다시 초대밭을 때까지는 다시 밭에 가입할 수 없습니다. '
+                f'만약 밭의 소유자라면 *영영 밭에 접근하지 못하게 될 수도 있습니다.* '
+                f'계속 진행하시겠습니까?')
+            await confirmation.add_reaction(const('emoji.white_check_mark'))
+
+            def _check(reaction: Reaction, user: User):
+                return reaction.message == confirmation \
+                       and user == ctx.author \
+                       and reaction.emoji == const('emoji.white_check_mark')
+
+            try:
+                await self.bot.wait_for('reaction_add', check=_check, timeout=30)
+            except AsyncioTimeoutError:
+                await confirmation.edit(content=':park: 제한 시간이 지나 확인이 취소되었습니다.')
+                return
+
+            await player.leave_farm(self.bot)
+
+        farm_id = next_farm_id()
+        farm_category = ctx.guild.get_channel(const('category_channel.farm'))
+        farm_channel = await farm_category.create_text_channel(f'밭-{farm_id}')
+        farm = new_farm(farm_id, ctx.author.id, farm_channel.id)
+        await player.join(farm, self.bot)
+
+        await ctx.send(f':park: {farm_channel.mention}{eul_reul(farm_channel.name)} 만들었습니다!')
+
+    @farm.command(aliases=['초대'],
+                  description='밭에 구성원을 초대합니다.')
+    async def invite(self, ctx: Context, user: User):
+        pass
 
     @set.error
     async def set_error(self, ctx: Context, error):
