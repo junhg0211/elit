@@ -130,4 +130,4 @@ dmypy.json
 
 # Project ignorations
 res/secret.json
-.idea/
+.idea/workspace.xml
