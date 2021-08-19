@@ -86,8 +86,8 @@ class MoneyCommand(Cog):
         embed = Embed(title='소지금 순위 (상위 10명)', description='\n'.join(leaderboard_text), color=const('color.elit'))
         await ctx.send(embed=embed)
 
-    @money.command(name='설정', aliases=['set'], description='소지금을 설정합니다.')
     @has_role(const('role.enifia'))
+    @money.command(name='설정', aliases=['set'], description='소지금을 설정합니다.', hidden=True)
     async def set(self, ctx: Context, user: User, amount: int):
         player = get_player(user.id).set_money(amount)
         await ctx.send(f':spy: __{user.display_name}__님의 소지금을 '

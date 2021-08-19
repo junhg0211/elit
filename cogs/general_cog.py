@@ -9,7 +9,12 @@ class General(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-        self.bot.help_command.command_attrs.update({'aliases': ['도움말']})
+        self.bot.help_command.command_attrs.update({
+            'name': '도움말',
+            'aliases': ['help'],
+            'description': '명령어 목록을 보고 도움말을 표시합니다.',
+            'help': ''
+        })
         bot.help_command = DefaultHelpCommand(command_attrs=self.bot.help_command.command_attrs)
 
     @command(name='정보', aliases=['info', 'information'], description='플레이어 정보를 확인합니다.')

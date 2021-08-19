@@ -30,7 +30,7 @@ class InventoryCommand(Cog):
         await ctx.send(embed=embed)
 
     @has_role(const('role.enifia'))
-    @command(name='주기', aliases=['give'], description='아이템을 줍니다.')
+    @command(name='주기', aliases=['give'], description='아이템을 줍니다.', hidden=True)
     async def give(self, ctx: Context, user: User, item_type: int, amount: int = 1):
         get_player(user.id).get_inventory().add_item(item_type, amount)
         await ctx.send(f':baggage_claim: __{user.display_name}__님에게 '
