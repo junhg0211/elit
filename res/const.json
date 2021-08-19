@@ -9,7 +9,8 @@
     "enifia": 875303102004203541
   },
   "category_channel": {
-    "farm": 877726558675161168
+    "farm": 877726558675161168,
+    "farm_deprecated": 877781009159057448
   },
   "text_channel": {
     "default": 877530625949708290,

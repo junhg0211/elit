@@ -7,6 +7,18 @@ from elit import Player, new_player, get_money_leaderboard, Farm, next_farm_id, 
 from util import const, eul_reul, i_ga, na_ina
 
 
+def check_farm(method):
+    async def decorated(self, ctx: Context, *args, **kwargs):
+        player = Player(ctx.author.id)
+        farm = Farm(player.farm_id)
+        if ctx.channel.id == farm.channel_id:
+            return await method(self, ctx, *args, **kwargs)
+        else:
+            await ctx.send(f':park: 이 명령어를 사용하기 위해서는 자신이 소속되어있는 밭에 있어야 해요! '
+                           f'{farm.get_channel(self.bot).mention}에서 시도해보세요.')
+    return decorated
+
+
 class ElitGeneral(Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -198,6 +210,12 @@ class ElitGeneral(Cog):
         await player.join(farm, self.bot)
 
         await ctx.send(f':park: {farm_channel.mention}{eul_reul(farm_channel.name)} 만들었습니다!')
+
+    @check_farm
+    @farm.command(aliases=['나가기'],
+                  description='밭에서 나갑니다.')
+    async def leave(self, ctx: Context):
+        await ctx.send('leave')
 
     @farm.command(aliases=['초대'],
                   description='밭에 구성원을 초대합니다.')
