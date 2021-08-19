@@ -51,8 +51,7 @@ class Farm:
             return len(cursor.fetchall())
 
     async def check_empty(self, bot: Bot):
-        if count := self.member_count():
-            print(count)
+        if self.member_count():
             return
 
         farm_deprecated_category = bot.get_channel(const('category_channel.farm_deprecated'))
