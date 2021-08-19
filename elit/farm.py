@@ -1,3 +1,4 @@
+from discord import TextChannel
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
@@ -30,7 +31,7 @@ class Farm:
         self.channel_id = data['channel_id']
         self.capacity = data['capacity']
 
-    def get_channel(self, bot: Bot):
+    def get_channel(self, bot: Bot) -> TextChannel:
         return bot.get_channel(self.channel_id)
 
     def member_count(self) -> int:
