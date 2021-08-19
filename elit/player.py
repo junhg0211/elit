@@ -30,7 +30,7 @@ class PlayerInventory:
         self.load_items()
 
     def __str__(self):
-        return str(self.items)
+        return '\n'.join(f'{item}, {item.amount}개' for item in self.items)
 
     def is_item(self, item_type: int) -> bool:
         for item in self.items:
@@ -101,7 +101,7 @@ class Player:
         self.discord_id = discord_id
 
         with database.cursor(DictCursor) as cursor:
-            cursor.execute('SELECT farm_id, money FROM player WHERE discord_id = %s', self.discord_id)
+            cursor.execute('SELECT * FROM player WHERE discord_id = %s', self.discord_id)
             data = cursor.fetchall()
         if not data:
             raise ValueError('해당 ID를 가진 플레이어에 대한 정보가 존재하지 않습니다.')
