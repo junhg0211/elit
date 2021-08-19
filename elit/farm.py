@@ -37,6 +37,11 @@ class Farm:
     def get_owner(self, bot: Bot) -> User:
         return bot.get_user(self.owner_id)
 
+    def get_member_ids(self) -> list:
+        with database.cursor() as cursor:
+            cursor.execute('SELECT discord_id FROM player WHERE farm_id = %s', self.id)
+            return [member[0] for member in cursor.fetchall()]
+
     def get_using(self):
         return 0
 
