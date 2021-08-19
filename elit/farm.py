@@ -7,6 +7,7 @@ from util import database, const
 
 def next_farm_id():
     with database.cursor() as cursor:
+        # noinspection SqlResolve
         cursor.execute('SELECT AUTO_INCREMENT '
                        'FROM information_schema.TABLES '
                        'WHERE TABLE_SCHEMA = "elit" AND TABLE_NAME = "farm"')
