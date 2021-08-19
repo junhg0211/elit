@@ -24,9 +24,7 @@ class FarmCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @group(aliases=['밭'],
-           description='자신의 밭 정보를 확인합니다.',
-           invoke_without_command=True)
+    @group(name='밭', aliases=['farm'], description='자신의 밭 정보를 확인합니다.', invoke_without_command=True)
     async def farm(self, ctx: Context):
         player = get_player(ctx.author.id)
 
@@ -55,8 +53,7 @@ class FarmCommand(Cog):
         embed.set_thumbnail(url=owner.avatar_url)
         await ctx.send(embed=embed)
 
-    @farm.command(aliases=['생성'],
-                  description='새로운 밭을 생성합니다.')
+    @farm.command(name='생성', aliases=['create'], description='새로운 밭을 생성합니다.')
     async def create(self, ctx: Context):
         player = get_player(ctx.author.id)
 
@@ -88,8 +85,7 @@ class FarmCommand(Cog):
 
         await ctx.send(f':park: {farm_channel.mention}{eul_reul(farm_channel.name)} 만들었습니다!')
 
-    @farm.command(aliases=['나가기'],
-                  description='밭에서 나갑니다.')
+    @farm.command(name='나가기', aliases=['leave'], description='밭에서 나갑니다.')
     async def leave(self, ctx: Context):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -117,8 +113,7 @@ class FarmCommand(Cog):
 
         await player.leave_farm(self.bot)
 
-    @farm.command(aliases=['초대'],
-                  description='밭에 구성원을 초대합니다.')
+    @farm.command(name='초대', aliases=['invite'], description='밭에 구성원을 초대합니다.')
     async def invite(self, ctx: Context, user: User):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)

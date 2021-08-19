@@ -11,16 +11,13 @@ class MoneyCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @group(aliases=['돈'],
-           description='현재 가지고 있는 돈을 확인합니다.',
-           invoke_without_command=True)
+    @group(name='돈', aliases=['money'], description='현재 가지고 있는 돈을 확인합니다.', invoke_without_command=True)
     async def money(self, ctx: Context):
         player = get_player(ctx.author.id)
         await ctx.send(f':moneybag: __{ctx.author.display_name}__님의 소지금은 '
                        f'__{player.money}{const("currency.default")}__입니다.')
 
-    @money.command(aliases=['보내기', '송금', '전송'],
-                   description='다른 사람에게 돈을 전송합니다.')
+    @money.command(name='보내기', aliases=['송금', '전송', 'send'], description='다른 사람에게 돈을 전송합니다.')
     async def send(self, ctx: Context, user: User, amount: int):
         emoji = ':money_with_wings:'
 
@@ -75,8 +72,7 @@ class MoneyCommand(Cog):
         )
         await wait(tasks)
 
-    @money.command(aliases=['순위'],
-                   description='소지금 순위를 확인합니다.')
+    @money.command(name='순위', aliases=['leaderboard'], description='소지금 순위를 확인합니다.')
     async def leaderboard(self, ctx: Context):
         leaderboard = get_money_leaderboard(10)
         leaderboard_text = list()
@@ -90,8 +86,7 @@ class MoneyCommand(Cog):
         embed = Embed(title='소지금 순위 (상위 10명)', description='\n'.join(leaderboard_text), color=const('color.elit'))
         await ctx.send(embed=embed)
 
-    @money.command(aliases=['설정'],
-                   description='소지금을 설정합니다.')
+    @money.command(name='설정', aliases=['set'], description='소지금을 설정합니다.')
     @has_role(const('role.enifia'))
     async def set(self, ctx: Context, user: User, amount: int):
         player = get_player(user.id).set_money(amount)

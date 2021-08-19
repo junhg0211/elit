@@ -5,15 +5,14 @@ from elit import Player, new_player, Farm
 from util import const
 
 
-class GeneralCog(Cog):
+class General(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
         self.bot.help_command.command_attrs.update({'aliases': ['도움말']})
         bot.help_command = DefaultHelpCommand(command_attrs=self.bot.help_command.command_attrs)
 
-    @command(aliases=['info', '정보'],
-             description='플레이어 정보를 확인합니다.')
+    @command(name='정보', aliases=['info', 'information'], description='플레이어 정보를 확인합니다.')
     async def information(self, ctx: Context):
         try:
             player = Player(ctx.author.id)
@@ -33,11 +32,10 @@ class GeneralCog(Cog):
 
         await ctx.send(embed=embed)
 
-    @command(aliases=['핑'],
-             description='핑퐁! 핑(지연 시간)을 확인합니다.')
+    @command(name='핑', aliases=['ping'], description='핑퐁! 핑(지연 시간)을 확인합니다.')
     async def ping(self, ctx: Context):
         await ctx.send(f':ping_pong: 핑퐁! (핑: {self.bot.latency * 1000:.3f}ms)')
 
 
 def setup(bot: Bot):
-    bot.add_cog(GeneralCog(bot))
+    bot.add_cog(General(bot))
