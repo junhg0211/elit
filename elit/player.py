@@ -5,7 +5,9 @@ from discord import User
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
-from elit import get_item_object, Farm, Item
+from elit import Farm
+from elit.item import Item
+from elit.item_util import get_item_object
 from elit.exception import CapacityError, InventoryCapacityError
 from util import database
 
