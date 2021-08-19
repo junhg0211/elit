@@ -1,10 +1,14 @@
 from os import listdir
 
+from discord import Intents
 from discord.ext.commands import Bot
 
 from util import const, i_ga, secret
 
-bot = Bot(const('command_prefix'))
+intents = Intents.default()
+intents.members = True
+
+bot = Bot(const('command_prefix'), intents=intents)
 
 for file_name in listdir('cogs'):
     if file_name.endswith('.py'):

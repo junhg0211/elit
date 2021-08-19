@@ -1,9 +1,9 @@
 from asyncio import wait, TimeoutError as AsyncioTimeoutError
 
-from discord import User, Reaction
+from discord import User, Reaction, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole
 
-from elit import Player, new_player
+from elit import Player, new_player, get_money_leaderboard
 from util import const, eul_reul, i_ga, na_ina
 
 
@@ -89,6 +89,21 @@ class ElitGeneral(Cog):
                       f'__{receiver.money}{currency}__{i_ga(currency)} 되었습니다.')
         )
         await wait(tasks)
+
+    @money.command(aliases=['순위'],
+                   description='소지금 순위를 확인합니다.')
+    async def leaderboard(self, ctx: Context):
+        leaderboard = get_money_leaderboard(10)
+        leaderboard_text = list()
+        for i, leader_raw in enumerate(leaderboard):
+            user = ctx.guild.get_member(leader_raw['discord_id'])
+            if user is None:
+                user = f'`ID: {leader_raw["discord_id"]}`'
+            else:
+                user = user.display_name
+            leaderboard_text.append(f'{i+1}위. **{user}** {leader_raw["money"]}{const("currency.default")}')
+        embed = Embed(title='소지금 순위 (상위 10명)', description='\n'.join(leaderboard_text), color=const('color.elit'))
+        await ctx.send(embed=embed)
 
     @money.command(aliases=['설정'],
                    description='소지금을 설정합니다.')

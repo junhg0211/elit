@@ -52,3 +52,17 @@ def new_player(discord_id: int) -> Player:
     with database.cursor() as cursor:
         cursor.execute('INSERT INTO player(discord_id, money) VALUES (%s, 0)', discord_id)
     return Player(discord_id)
+
+
+def get_money_leaderboard(limit: int, from_: int = 0) -> tuple:
+    """
+    ``discord_id``, ``money``가 담겨있는 raw data가 다음과 같은 형태로 주어집니다.
+    ``({'discord_id': ..., 'money': ...}, {'discord_id': ..., 'money': ...})``
+
+    :param limit: 정보의 개수
+    :param from_: 처음 정보 번째수
+    :return:
+    """
+    with database.cursor(DictCursor) as cursor:
+        cursor.execute('SELECT discord_id, money FROM player ORDER BY money DESC LIMIT %s, %s', (from_, limit))
+        return cursor.fetchall()[from_:from_ + limit]
