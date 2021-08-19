@@ -1,3 +1,5 @@
+from math import inf
+
 from pymysql.cursors import DictCursor
 
 from util import database
@@ -20,6 +22,9 @@ class ItemData:
         self.data[key] = value
         return self
 
+    def get_data(self, key: str):
+        return self.data[key]
+
     def save_data(self):
         with database.cursor() as cursor:
             cursor.execute('DELETE FROM item_data WHERE item_id = %s;', self.id)
@@ -34,16 +39,54 @@ class ItemData:
         return self
 
 
-def get_item_object(item_type, amount, item_id):
+class Item:
+    type = 0
+    name = '아무것도 아님'
+
+    def __init__(self, amount: int, item_id: int):
+        self.amount = amount
+        self.item_data = ItemData(item_id)
+
+    def set_amount(self, amount: int) -> 'Item':
+        self.amount = amount
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE inventory SET amount = %s WHERE item_id = %s', (self.amount, self.item_data.id))
+        return self
+
+    def __str__(self):
+        return f'{self.type}: {self.name}'
+
+    def __repr__(self):
+        return f'{self} ({self.amount})'
+
+
+def get_item_object(item_type, amount, item_id) -> Item:
     if item_type == -1:
         pass
     else:
         return Item(amount, item_id)
 
 
-class Item:
-    type = 0
+def get_item_name_by_type(item_type: int) -> str:
+    for variable in __dir:
+        if not variable.startswith('__') and variable[0].upper() == variable[0]:
+            item_class = eval(variable)
+            if issubclass(item_class, Item) and item_class.type == item_type:
+                return item_class.name
 
-    def __init__(self, amount: int, item_id: int):
-        self.amount = amount
-        self.item_data = ItemData(item_id)
+
+def get_max_type_number() -> int:
+    max_ = -inf
+    for variable in __dir:
+        if not variable.startswith('__') and variable[0].upper() == variable[0]:
+            item_class = eval(variable)
+            if issubclass(item_class, Item):
+                max_ = max(max_, item_class.type)
+    return max_
+
+
+__dir = dir()
+
+if __name__ == '__main__':
+    print(get_item_name_by_type(0))
+    print(get_max_type_number())

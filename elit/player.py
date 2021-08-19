@@ -1,12 +1,91 @@
 from asyncio import wait
+from typing import List
 
 from discord import User
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
-from elit import get_item_object, Farm
-from elit.exception import CapacityError
+from elit import get_item_object, Farm, Item
+from elit.exception import CapacityError, InventoryCapacityError
 from util import database
+
+
+def next_item_id():
+    with database.cursor() as cursor:
+        cursor.execute('SELECT AUTO_INCREMENT '
+                       'FROM information_schema.TABLES '
+                       'WHERE TABLE_SCHEMA = "elit" AND TABLE_NAME = "inventory"')
+        return cursor.fetchall()[0][0]
+
+
+class PlayerInventory:
+    def __init__(self, discord_id: int):
+        self.discord_id = discord_id
+        self.items: List[Item] = list()
+
+        with database.cursor() as cursor:
+            cursor.execute('SELECT inventory_size FROM player WHERE discord_id = %s', self.discord_id)
+            self.size = cursor.fetchall()[0][0]
+
+        self.load_items()
+
+    def __str__(self):
+        return str(self.items)
+
+    def is_item(self, item_type: int) -> bool:
+        for item in self.items:
+            if item.type == item_type:
+                return True
+        return False
+
+    def get_item(self, item_type: int) -> Item:
+        for item in self.items:
+            if item.type == item_type:
+                return item
+
+    def get_capacity(self):
+        """아이템 가지고 있는 개수"""
+        result = 0
+        for item in self.items:
+            result += item.amount
+        return result
+
+    def get_free_space(self) -> bool:
+        """더 담을 수 있는 아이템 개수"""
+        return self.size - self.get_capacity()
+
+    def add_item(self, item_type: int, amount: int = 1) -> 'PlayerInventory':
+        """
+        인벤토리에 아이템을 담습니다.
+
+        :exception InventoryCapacityError: 더 이상 인벤토리에 아이템을 담을 수 없음
+        """
+
+        amount = min(amount, self.get_free_space())
+
+        if amount <= 0:
+            raise InventoryCapacityError('이 인벤토리에 더 이상 아이템을 담을 수 없습니다.')
+
+        item = self.get_item(item_type)
+        if item is not None:
+            item.set_amount(item.amount + amount)
+            return self
+
+        with database.cursor() as cursor:
+            cursor.execute('INSERT INTO inventory(discord_id, item_type, amount) '
+                           'VALUES (%s, %s, %s)', (self.discord_id, item_type, amount))
+        return self.load_items()
+
+    def load_items(self) -> 'PlayerInventory':
+        with database.cursor() as cursor:
+            cursor.execute('SELECT item_type, amount, item_id FROM inventory WHERE discord_id = %s', self.discord_id)
+            items = cursor.fetchall()
+        self.items = list()
+        for item_type, amount, item_id in items:
+            item = get_item_object(item_type, amount, item_id)
+            if item is not None:
+                self.items.append(item)
+        return self
 
 
 class Player:
@@ -31,7 +110,9 @@ class Player:
 
         self.farm_id = data['farm_id']
         self.money = data['money']
-        self.player_inventory = PlayerInventory(self.discord_id)
+
+    def get_inventory(self) -> PlayerInventory:
+        return PlayerInventory(self.discord_id)
 
     def set_money(self, amount: int) -> 'Player':
         self.money = amount
@@ -77,31 +158,17 @@ class Player:
         await farm_channel.send(f':people_wrestling: 새로운 구성원 {user.mention}님을 반겨주세요!')
 
 
-class PlayerInventory:
-    def __init__(self, discord_id: int):
-        self.discord_id = discord_id
-        self.items = list()
-
-        self.load_items()
-
-    def __str__(self):
-        return str(self.items)
-
-    def load_items(self):
-        with database.cursor() as cursor:
-            cursor.execute('SELECT item_type, amount, item_id FROM inventory WHERE discord_id = %s', self.discord_id)
-            items = cursor.fetchall()
-        for item_type, amount, item_id in items:
-            item = get_item_object(item_type, amount, item_id)
-            if item is not None:
-                self.items.append(item)
-        return self
-
-
 def new_player(discord_id: int) -> Player:
     with database.cursor() as cursor:
         cursor.execute('INSERT INTO player(discord_id, money) VALUES (%s, 0)', discord_id)
     return Player(discord_id)
+
+
+def get_player(discord_id: int) -> Player:
+    try:
+        return Player(discord_id)
+    except ValueError:
+        return new_player(discord_id)
 
 
 def get_money_leaderboard(limit: int, from_: int = 0) -> tuple:

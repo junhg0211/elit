@@ -3,12 +3,12 @@ from asyncio import TimeoutError as AsyncioTimeoutError
 from discord import Embed, User
 from discord.ext.commands import Cog, Bot, group, Context
 
-from elit import Player, new_player, Farm, next_farm_id, new_farm
+from elit import Farm, next_farm_id, new_farm, get_player
 from util import const, emoji_reaction_check, eul_reul
 
 
 def check_farm(ctx: Context, bot: Bot):
-    player = Player(ctx.author.id)
+    player = get_player(ctx.author.id)
     if not player.is_in_farm():
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 밭에 소속되어 있어야 해요!** ' \
                f'`엘 밭` 명령어를 통해 밭에 소속되는 방법을 알아보세요.'
@@ -20,7 +20,7 @@ def check_farm(ctx: Context, bot: Bot):
                f'{farm.get_channel(bot).mention}에서 시도해보세요.'
 
 
-class FarmCog(Cog):
+class FarmCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -28,10 +28,7 @@ class FarmCog(Cog):
            description='자신의 밭 정보를 확인합니다.',
            invoke_without_command=True)
     async def farm(self, ctx: Context):
-        try:
-            player = Player(ctx.author.id)
-        except ValueError:
-            player = new_player(ctx.author.id)
+        player = get_player(ctx.author.id)
 
         if player.farm_id is None:
             await ctx.send(f':park: **{ctx.author.mention}님이 소속한 밭이 존재하지 않습니다.**\n'
@@ -61,10 +58,7 @@ class FarmCog(Cog):
     @farm.command(aliases=['생성'],
                   description='새로운 밭을 생성합니다.')
     async def create(self, ctx: Context):
-        try:
-            player = Player(ctx.author.id)
-        except ValueError:
-            player = new_player(ctx.author.id)
+        player = get_player(ctx.author.id)
 
         if player.farm_id is not None:
             confirmation = await ctx.send(
@@ -101,7 +95,7 @@ class FarmCog(Cog):
             await ctx.send(message)
             return
 
-        player = Player(ctx.author.id)
+        player = get_player(ctx.author.id)
         farm = player.get_farm()
         farm_channel = farm.get_channel(self.bot)
 
@@ -130,9 +124,9 @@ class FarmCog(Cog):
             await ctx.send(message)
             return
 
-        player = Player(ctx.author.id)
+        player = get_player(ctx.author.id)
         try:
-            invitee = Player(user.id)
+            invitee = get_player(user.id)
         except ValueError:
             await ctx.send(f':people_wrestling: **__{user.display_name}__님의 정보를 확인할 수 없어요!** '
                            f'__{user.display_name}__님이 플레이어 정보를 생성하지 않아서 그래요. '
@@ -181,4 +175,4 @@ class FarmCog(Cog):
 
 
 def setup(bot: Bot):
-    bot.add_cog(FarmCog(bot))
+    bot.add_cog(FarmCommand(bot))
