@@ -93,6 +93,11 @@ class FarmCommand(Cog):
 
         player = get_player(ctx.author.id)
         farm = player.get_farm()
+
+        if farm.owner_id == ctx.author.id and farm.member_count() > 1:
+            await ctx.send(f':people_wrestling: {ctx.author.mention} **밭에서 소유자가 나가기 위해서는 다른 구성원이 없어야 합니다!** ')
+            return
+
         farm_channel = farm.get_channel(self.bot)
 
         confirmation = await ctx.send(f':people_wrestling: 정말 {farm_channel.mention}에서 탈퇴하시겠습니까? '
