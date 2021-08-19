@@ -1,7 +1,7 @@
 from asyncio import wait, TimeoutError as AsyncioTimeoutError
 
 from discord import User, Reaction, Embed
-from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole
+from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole, command
 
 from elit import Player, new_player, get_money_leaderboard, Farm, next_farm_id, new_farm
 from util import const, eul_reul, i_ga, na_ina
@@ -10,6 +10,22 @@ from util import const, eul_reul, i_ga, na_ina
 class ElitGeneral(Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @command(aliases=['정보'],
+             description='플레이어 정보를 확인합니다.')
+    async def information(self, ctx: Context):
+        try:
+            player = Player(ctx.author.id)
+        except ValueError:
+            player = new_player(ctx.author.id)
+
+        embed = Embed(title=f'**{ctx.author.display_name}**님의 정보', color=const('color.elit'))
+        embed.add_field(name='서버 가입 일자', value=str(ctx.author.joined_at), inline=False)
+        embed.add_field(name='소지금', value=f'{player.money}{const("currency.default")}')
+        embed.add_field(name='소속되어있는 밭 ID', value=str(player.farm_id))
+        embed.set_thumbnail(url=ctx.author.avatar_url)
+
+        await ctx.send(embed=embed)
 
     @group(aliases=['돈'],
            description='현재 가지고 있는 돈을 확인합니다.',
