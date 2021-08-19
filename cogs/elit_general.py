@@ -178,7 +178,16 @@ class ElitGeneral(Cog):
                            '이 문제를 해결하기 위해서는 전문가가 있어야 합니다. 관리자에게 보고해주세요.')
             return
 
-        await ctx.send(f'{farm.id, farm.channel_id, farm.owner_id, farm.size, farm.capacity}')
+        owner = farm.get_owner(self.bot)
+        farm_using = farm.get_using()
+        embed = Embed(title='밭 정보', description=f'ID: {farm.id}', color=const('color.elit'))
+        embed.add_field(name='채널', value=farm.get_channel(self.bot).mention)
+        embed.add_field(name='소유자', value=owner.display_name)
+        embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}')
+        embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)',
+                        inline=False)
+        embed.set_thumbnail(url=owner.avatar_url)
+        await ctx.send(embed=embed)
 
     @farm.command(aliases=['생성'],
                   description='새로운 밭을 생성합니다.')
