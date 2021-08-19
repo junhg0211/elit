@@ -273,6 +273,12 @@ class ElitGeneral(Cog):
             return
 
         farm = player.get_farm()
+
+        if farm.member_count() >= farm.capacity:
+            await ctx.send(':people_wrestling: **밭 구성원이 가득 찼습니다!** '
+                           '밭에 있는 사람을 내쫒거나, 상점에서 밭 최대 인원 주문서를 구매해서 사용해주세요.')
+            return
+
         farm_channel = farm.get_channel(self.bot)
         confirmation = await ctx.send(f':people_wrestling: __{user.display_name}__님을 '
                                       f'{farm_channel.mention}으로 초대하시려면 아래 '
