@@ -1,3 +1,6 @@
+from asyncio import wait
+
+from discord import User
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
@@ -30,20 +33,37 @@ class Player:
         self.money = data['money']
         self.player_inventory = PlayerInventory(self.discord_id)
 
-    def set_money(self, amount: int):
+    def set_money(self, amount: int) -> 'Player':
         self.money = amount
         with database.cursor() as cursor:
             cursor.execute('UPDATE player SET money = %s WHERE discord_id = %s', (amount, self.discord_id))
         return self
 
-    def get_user(self, bot: Bot):
+    def get_user(self, bot: Bot) -> User:
         return bot.get_user(self.discord_id)
 
-    async def leave_farm(self, bot: Bot):
-        farm_channel = Farm(self.farm_id).get_channel(bot)
-        user = self.get_user(bot)
-        await farm_channel.send(f':people_wrestling: {user.mention}님이 밭을 떠났습니다!')
+    def get_farm(self) -> Farm:
+        return Farm(self.farm_id)
+
+    def has_farm(self):
+        return self.farm_id is not None
+
+    def is_farm(self, channel_id: int) -> bool:
+        return self.farm_id == channel_id
+
+    async def leave_farm(self, bot: Bot) -> 'Player':
+        farm = Farm(self.farm_id)
+        farm_channel = farm.get_channel(bot)
+
         self.farm_id = None
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE player SET farm_id = NULL WHERE discord_id = %s', self.discord_id)
+
+        user = self.get_user(bot)
+        await wait((
+            farm.check_empty(bot),
+            farm_channel.send(f':people_wrestling: {user.mention}님이 밭을 떠났습니다!')))
+        return self
 
     async def join(self, farm: Farm, bot: Bot):
         farm_channel = farm.get_channel(bot)

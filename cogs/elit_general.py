@@ -1,21 +1,27 @@
 from asyncio import wait, TimeoutError as AsyncioTimeoutError
 
-from discord import User, Reaction, Embed
+from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole, command
 
 from elit import Player, new_player, get_money_leaderboard, Farm, next_farm_id, new_farm
-from util import const, eul_reul, i_ga, na_ina
+from util import const, eul_reul, i_ga, na_ina, emoji_reaction_check
 
 
 def check_farm(method):
     async def decorated(self, ctx: Context, *args, **kwargs):
         player = Player(ctx.author.id)
+        if not player.has_farm():
+            await ctx.send(f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 밭에 소속되어 있어야 해요!** '
+                           f'`엘 밭` 명령어를 통해 밭에 소속되는 방법을 알아보세요.')
+            return
         farm = Farm(player.farm_id)
         if ctx.channel.id == farm.channel_id:
             return await method(self, ctx, *args, **kwargs)
         else:
-            await ctx.send(f':park: 이 명령어를 사용하기 위해서는 자신이 소속되어있는 밭에 있어야 해요! '
+            await ctx.send(f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 자신이 소속되어있는 밭에 있어야 해요!** '
                            f'{farm.get_channel(self.bot).mention}에서 시도해보세요.')
+
+    decorated.__name__ = method.__name__
     return decorated
 
 
@@ -30,13 +36,16 @@ class ElitGeneral(Cog):
             player = Player(ctx.author.id)
         except ValueError:
             player = new_player(ctx.author.id)
-        
-        farm = Farm(player.farm_id)
+
+        if player.has_farm():
+            farm = Farm(player.farm_id)
+        else:
+            farm = None
 
         embed = Embed(title=f'**{ctx.author.display_name}**님의 정보', color=const('color.elit'))
         embed.add_field(name='서버 가입 일자', value=str(ctx.author.joined_at), inline=False)
         embed.add_field(name='소지금', value=f'{player.money}{const("currency.default")}')
-        embed.add_field(name='소속되어있는 밭', value=farm.get_channel(self.bot).mention)
+        embed.add_field(name='소속되어있는 밭', value='(없음)' if farm is None else farm.get_channel(self.bot).mention)
         embed.set_thumbnail(url=ctx.author.avatar_url)
 
         await ctx.send(embed=embed)
@@ -97,13 +106,11 @@ class ElitGeneral(Cog):
                                       f'송금을 취소하려면 아무런 반응을 하지 않으면 됩니다.')
         await confirmation.add_reaction(const('emoji.money_with_wings'))
 
-        def _check(reaction: Reaction, user_: User):
-            return reaction.message == confirmation \
-                   and user_ == ctx.author \
-                   and reaction.emoji == const('emoji.money_with_wings')
-
         try:
-            await self.bot.wait_for('reaction_add', check=_check, timeout=30)
+            await self.bot.wait_for('reaction_add',
+                                    check=emoji_reaction_check(confirmation, const('emoji.money_with_wings'),
+                                                               ctx.author),
+                                    timeout=30)
         except AsyncioTimeoutError:
             await confirmation.edit(content='제한 시간이 지나 송금이 취소되었습니다.')
             return
@@ -159,9 +166,9 @@ class ElitGeneral(Cog):
             player = new_player(ctx.author.id)
 
         if player.farm_id is None:
-            await ctx.send(f':park: **{ctx.author.mention}님의 명의로 된 밭이 존재하지 않습니다.** '
-                           f'밭을 가지고 있는 친구가 `엘 밭 초대` 명령어를 사용해서 *밭에 __{ctx.author.display_name}__님을 초대*하거나 '
-                           f'*본인 명의의 밭을 새로 만들 수* 있습니다. 본인 명의의 밭을 새로 만들기 위해서는 `엘 밭 생성`을 입력해주세요.')
+            await ctx.send(f':park: **{ctx.author.mention}님이 소속한 밭이 존재하지 않습니다.**\n'
+                           f'> - 밭을 가지고 있는 친구가 `엘 밭 초대` 명령어를 사용해서 *밭에 __{ctx.author.display_name}__님을 초대*하거나\n'
+                           f'> - *본인 명의의 밭을 새로 만들 수* 있습니다. 본인 명의의 밭을 새로 만들기 위해서는 `엘 밭 생성`을 입력해주세요.')
             return
 
         try:
@@ -190,13 +197,11 @@ class ElitGeneral(Cog):
                 f'계속 진행하시겠습니까?')
             await confirmation.add_reaction(const('emoji.white_check_mark'))
 
-            def _check(reaction: Reaction, user: User):
-                return reaction.message == confirmation \
-                       and user == ctx.author \
-                       and reaction.emoji == const('emoji.white_check_mark')
-
             try:
-                await self.bot.wait_for('reaction_add', check=_check, timeout=30)
+                await self.bot.wait_for('reaction_add',
+                                        check=emoji_reaction_check(confirmation, const('emoji.white_check_mark'),
+                                                                   ctx.author),
+                                        timeout=30)
             except AsyncioTimeoutError:
                 await confirmation.edit(content=':park: 제한 시간이 지나 확인이 취소되었습니다.')
                 return
@@ -211,11 +216,32 @@ class ElitGeneral(Cog):
 
         await ctx.send(f':park: {farm_channel.mention}{eul_reul(farm_channel.name)} 만들었습니다!')
 
-    @check_farm
     @farm.command(aliases=['나가기'],
                   description='밭에서 나갑니다.')
+    @check_farm
     async def leave(self, ctx: Context):
-        await ctx.send('leave')
+        player = Player(ctx.author.id)
+        farm = player.get_farm()
+        farm_channel = farm.get_channel(self.bot)
+
+        confirmation = await ctx.send(f':people_wrestling: 정말 {farm_channel.mention}에서 탈퇴하시겠습니까? '
+                                      f'한 번 탈퇴한 밭으로는 다시 초대받을 때까지 가입할 수 없으며, '
+                                      f'밭에 사람이 더 이상 남아있지 않다면 영영 접근하지 못할 수 있습니다. '
+                                      f'계속하시려면 {const("emoji.white_check_mark")}를 눌러주세요.')
+        await confirmation.add_reaction(const('emoji.white_check_mark'))
+
+        try:
+            await self.bot.wait_for('reaction_add',
+                                    check=emoji_reaction_check(confirmation, const('emoji.white_check_mark'),
+                                                               ctx.author),
+                                    timeout=30)
+        except AsyncioTimeoutError:
+            await confirmation.edit(content=':people_wrestling: 시간이 초과되어 작업이 종료되었습니다.')
+            return
+
+        await wait((
+            player.leave_farm(self.bot),
+            ctx.send(f':people_wrestling: {farm_channel.mention}에서 탈퇴했습니다.')))
 
     @farm.command(aliases=['초대'],
                   description='밭에 구성원을 초대합니다.')
