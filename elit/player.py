@@ -45,7 +45,7 @@ class Player:
     def get_farm(self) -> Farm:
         return Farm(self.farm_id)
 
-    def has_farm(self):
+    def is_in_farm(self):
         return self.farm_id is not None
 
     def is_farm(self, channel_id: int) -> bool:

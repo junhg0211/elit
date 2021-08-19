@@ -52,7 +52,7 @@ class Farm:
 
         farm_deprecated_category = bot.get_channel(const('category_channel.farm_deprecated'))
         farm_channel = bot.get_channel(self.channel_id)
-        await farm_channel.edit(category=farm_deprecated_category)
+        await farm_channel.edit(category=farm_deprecated_category, sync_permissions=True)
 
         await farm_channel.send(':people_wrestling: 밭에 사람이 아무도 없는 것이 확인되어 카테고리를 이동했습니다! '
                                 '만약 이 밭의 구성원이 이 메시지를 보고 있다면 관리자를 호출해주세요. 밭을 복구해줄게요.')
