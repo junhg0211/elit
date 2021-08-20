@@ -1,4 +1,4 @@
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, Context
 
 from elit.item import Item
 from util import eul_reul, const
@@ -10,7 +10,7 @@ class Check10(Item):
     description = f'10원짜리 수표입니다. ' \
                   f'사용하면 10{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
-    def use(self, amount: int, player, bot: Bot) -> str:
+    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> str:
         self.check_amount(amount)
         currency = const("currency.default")
         player.earn_money(10 * amount)

@@ -1,8 +1,8 @@
 from asyncio import wait
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from discord import User
-from discord.ext.commands import Bot
+from discord import User, Embed
+from discord.ext.commands import Bot, Context
 from pymysql.cursors import DictCursor
 
 from elit import Farm
@@ -45,7 +45,7 @@ class PlayerInventory:
                 return True
         return False
 
-    def earn_item(self, item_type: int) -> Optional[Item]:
+    def get_item(self, item_type: int) -> Optional[Item]:
         """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 None을 반환합니다."""
         for item in self.items:
             if item.type == item_type:
@@ -62,7 +62,7 @@ class PlayerInventory:
         """더 담을 수 있는 아이템 개수"""
         return self.size - self.get_capacity()
 
-    def add_item(self, item_type: int, amount: int = 1) -> 'PlayerInventory':
+    def add_item(self, item_type: int, amount: int = 1) -> int:
         """
         인벤토리에 아이템을 담습니다.
 
@@ -70,19 +70,18 @@ class PlayerInventory:
         """
 
         amount = min(amount, self.get_free_space())
-
         if amount <= 0:
             raise InventoryCapacityError('이 인벤토리에 더 이상 아이템을 담을 수 없습니다.')
 
-        item = self.earn_item(item_type)
+        item = self.get_item(item_type)
         if item is not None:
             item.set_amount(item.amount + amount)
-            return self
+            return amount
 
         with database.cursor() as cursor:
             cursor.execute('INSERT INTO inventory(discord_id, item_type, amount) '
                            'VALUES (%s, %s, %s)', (self.discord_id, item_type, amount))
-        return self.load_items()
+        return amount
 
     def load_items(self) -> 'PlayerInventory':
         with database.cursor() as cursor:
@@ -119,8 +118,8 @@ class Player:
         self.farm_id = data['farm_id']
         self.money = data['money']
 
-    def use(self, item: Item, amount: int, bot: Bot) -> str:
-        return item.use(amount, self, bot)
+    async def use(self, item: Item, amount: int, bot: Bot, ctx: Context) -> Tuple[str, Embed]:
+        return await item.use(amount, self, bot, ctx)
 
     def get_inventory(self) -> PlayerInventory:
         return PlayerInventory(self.discord_id)

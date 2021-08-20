@@ -1,4 +1,7 @@
-from discord.ext.commands import Bot
+from typing import Tuple, Optional
+
+from discord import Embed
+from discord.ext.commands import Bot, Context
 
 from elit import ItemData
 from util import database, eul_reul, eun_neun, i_ga
@@ -14,6 +17,10 @@ class Item:
 
         self.amount = self.get_amount()
 
+    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
+        self.check_amount(amount)
+        return self.apply_use(amount, f'`{self.name}`{eul_reul(self.name)} {amount}개 사용했다!'), None
+
     def set_amount(self, amount: int) -> 'Item':
         self.amount = amount
         with database.cursor() as cursor:
@@ -28,10 +35,6 @@ class Item:
             cursor.execute('SELECT amount FROM inventory WHERE item_id = %s', self.item_data.id)
             data = cursor.fetchall()
             return data[0][0]
-
-    def use(self, amount: int, player, bot: Bot) -> str:
-        self.check_amount(amount)
-        return self.apply_use(amount, f'`{self.name}`{eul_reul(self.name)} {amount}개 사용했다!')
 
     def apply_use(self, amount: int, use_message: str) -> str:
         self.set_amount(self.amount - amount)
@@ -56,6 +59,6 @@ class Item1(Item):
     name = "아무것"
     description = '아무것입니다.'
 
-    def use(self, amount: int, player, bot: Bot) -> str:
+    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> str:
         self.check_amount(amount)
         return self.apply_use(amount, f'헉!! `{self.name}`{i_ga(self.name)} {amount}개!!')

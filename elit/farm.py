@@ -1,8 +1,12 @@
+from datetime import datetime
+from typing import Tuple
+
 from discord import TextChannel, User
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
-from util import database, const
+from elit.exception import CropCapacityError
+from util import database, const, eun_neun
 
 
 def next_farm_id():
@@ -12,6 +16,14 @@ def next_farm_id():
                        'FROM information_schema.TABLES '
                        'WHERE TABLE_SCHEMA = "elit" AND TABLE_NAME = "farm"')
         return cursor.fetchall()[0][0]
+
+
+class Crop:
+    def __init__(self, farm_id: int, crop_name: str, amount: int, planted_at: datetime):
+        self.farm_id = farm_id
+        self.name = crop_name
+        self.amount = amount
+        self.planted_at = planted_at
 
 
 class Farm:
@@ -43,8 +55,41 @@ class Farm:
             cursor.execute('SELECT discord_id FROM player WHERE farm_id = %s', self.id)
             return [member[0] for member in cursor.fetchall()]
 
-    def get_using(self):
-        return 0
+    def get_crops(self):
+        with database.cursor(DictCursor) as cursor:
+            cursor.execute('SELECT * FROM farm_crop WHERE farm_id = %s', self.id)
+        for raw_crop in cursor.fetchall():
+            yield Crop(self.id, raw_crop['crop_name'], raw_crop['amount'], raw_crop['planted_at'])
+
+    def get_using(self) -> int:
+        result = 0
+        for crops in self.get_crops():
+            result += crops.amount
+        return result
+
+    def get_planted_crop_with_name(self, name: str) -> Crop:
+        with database.cursor(DictCursor) as cursor:
+            cursor.execute('SELECT * FROM farm_crop WHERE farm_id = %s AND crop_name = %s', (self.id, name))
+            data = cursor.fetchall()
+        if data:
+            data = data[0]
+            return Crop(self.id, name, data['amount'], data['planted_at'])
+
+    def get_free_space(self) -> int:
+        return self.size - self.get_using()
+
+    def plant(self, name: str, amount: int) -> Tuple[int, datetime]:
+        amount = min(amount, self.get_free_space())
+        if amount <= 0:
+            raise CropCapacityError('이 섬에 더 이상 작물을 심을 수 없습니다.')
+
+        if self.get_planted_crop_with_name(name):
+            raise ValueError(f'{name}{eun_neun(name)} 이미 심어져 있습니다.')
+        else:
+            with database.cursor() as cursor:
+                cursor.execute('INSERT INTO farm_crop VALUES (%s, %s, %s, %s)',
+                               (self.id, name, amount, planted_at := datetime.now()))
+            return amount, planted_at
 
     def member_count(self) -> int:
         with database.cursor() as cursor:

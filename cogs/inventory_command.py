@@ -4,6 +4,7 @@ from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, CommandError, MissingRole, command
 
 from elit import get_player, get_item_class_by_type, get_max_type_number, get_item_name_by_type
+from elit.exception import InventoryCapacityError
 from util import const, eul_reul
 
 
@@ -44,7 +45,7 @@ class InventoryCommand(Cog):
     async def use(self, ctx: Context, item_type: int, count: Union[int, str] = 1):
         player = get_player(ctx.author.id)
         inventory = player.get_inventory()
-        item = inventory.earn_item(item_type)
+        item = inventory.get_item(item_type)
 
         item_name = get_item_name_by_type(item_type)
         if not item_name:
@@ -60,10 +61,11 @@ class InventoryCommand(Cog):
             count = item.amount
 
         try:
-            log = player.use(item, count, self.bot)
-        except ValueError as e:
+            log, embed = await player.use(item, count, self.bot, ctx)
+        except Exception as e:
             log = str(e)
-        await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}')
+            embed = None
+        await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}', embed=embed)
 
     @has_role(const('role.enifia'))
     @command(name='주기', aliases=['give'], description='아이템을 줍니다.', hidden=True)
@@ -73,9 +75,13 @@ class InventoryCommand(Cog):
                            f'아이템 타입 번호를 잘 입력했는지 확인해주세요.')
             return
 
-        get_player(user.id).get_inventory().add_item(item_type, amount)
-        await ctx.send(f':baggage_claim: __{user.display_name}__님에게 '
-                       f'__{get_item_name_by_type(item_type)}__ __{amount}개__를 주었습니다!')
+        try:
+            amount = get_player(user.id).get_inventory().add_item(item_type, amount)
+        except InventoryCapacityError:
+            pass
+        else:
+            await ctx.send(f':baggage_claim: __{user.display_name}__님에게 '
+                           f'__{get_item_name_by_type(item_type)}__ __{amount}개__를 주었습니다!')
 
     @give.error
     async def give_error(self, ctx: Context, error: CommandError):
