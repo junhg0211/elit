@@ -54,7 +54,11 @@ class InventoryCommand(Cog):
         if count in ('all', '모두', '전부', '다'):
             count = item.amount
 
-        await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {player.use(item, count, self.bot)}')
+        try:
+            log = player.use(item, count, self.bot)
+        except ValueError as e:
+            log = str(e)
+        await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}')
 
     @has_role(const('role.enifia'))
     @command(name='주기', aliases=['give'], description='아이템을 줍니다.', hidden=True)
