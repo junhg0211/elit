@@ -45,7 +45,7 @@ class PlayerInventory:
                 return True
         return False
 
-    def get_item(self, item_type: int) -> Optional[Item]:
+    def earn_item(self, item_type: int) -> Optional[Item]:
         """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 None을 반환합니다."""
         for item in self.items:
             if item.type == item_type:
