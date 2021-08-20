@@ -1,5 +1,5 @@
 from asyncio import wait
-from typing import List
+from typing import List, Optional
 
 from discord import User
 from discord.ext.commands import Bot
@@ -32,16 +32,21 @@ class PlayerInventory:
 
         self.load_items()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '\n'.join(f'{item}, {item.amount}개' for item in self.items)
 
+    def __bool__(self) -> bool:
+        return bool(self.items)
+
     def is_item(self, item_type: int) -> bool:
+        """이 아이템을 가지고 있는지 확인합니다."""
         for item in self.items:
             if item.type == item_type:
                 return True
         return False
 
-    def get_item(self, item_type: int) -> Item:
+    def get_item(self, item_type: int) -> Optional[Item]:
+        """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 None을 반환합니다."""
         for item in self.items:
             if item.type == item_type:
                 return item
@@ -113,6 +118,9 @@ class Player:
 
         self.farm_id = data['farm_id']
         self.money = data['money']
+
+    def use(self, item: Item, amount: int, bot: Bot) -> str:
+        return item.use(amount, self, bot)
 
     def get_inventory(self) -> PlayerInventory:
         return PlayerInventory(self.discord_id)

@@ -23,7 +23,11 @@ def get_item_object(item_type, amount, item_id) -> elit.item.Item:
 
 
 def get_item_name_by_type(item_type: int) -> str:
-    return get_item_class_by_type(item_type).name
+    item_class = get_item_class_by_type(item_type)
+    if item_class is None:
+        return ''
+    else:
+        return item_class.name
 
 
 def get_max_type_number() -> int:
