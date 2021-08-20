@@ -74,7 +74,7 @@ class PlayerInventory:
         if amount <= 0:
             raise InventoryCapacityError('이 인벤토리에 더 이상 아이템을 담을 수 없습니다.')
 
-        item = self.get_item(item_type)
+        item = self.earn_item(item_type)
         if item is not None:
             item.set_amount(item.amount + amount)
             return self

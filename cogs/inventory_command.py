@@ -44,7 +44,7 @@ class InventoryCommand(Cog):
     async def use(self, ctx: Context, item_type: int, count: Union[int, str] = 1):
         player = get_player(ctx.author.id)
         inventory = player.get_inventory()
-        item = inventory.get_item(item_type)
+        item = inventory.earn_item(item_type)
 
         item_name = get_item_name_by_type(item_type)
         if not item_name:
