@@ -59,6 +59,6 @@ class Item1(Item):
     name = "아무것"
     description = '아무것입니다.'
 
-    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> str:
+    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         self.check_amount(amount)
-        return self.apply_use(amount, f'헉!! `{self.name}`{i_ga(self.name)} {amount}개!!')
+        return self.apply_use(amount, f'헉!! `{self.name}`{i_ga(self.name)} {amount}개!!'), None
