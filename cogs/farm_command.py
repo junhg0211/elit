@@ -1,10 +1,10 @@
 from asyncio import TimeoutError as AsyncioTimeoutError
 
 from discord import Embed, User
-from discord.ext.commands import Cog, Bot, group, Context
+from discord.ext.commands import Cog, Bot, group, Context, command
 
 from elit import Farm, next_farm_id, new_farm, get_player
-from util import const, emoji_reaction_check, eul_reul
+from util import const, emoji_reaction_check, eul_reul, i_ga
 
 
 def check_farm(ctx: Context, bot: Bot):
@@ -48,7 +48,7 @@ class FarmCommand(Cog):
         for crop in farm.get_crops():
             crop_names.append(crop.name)
 
-        embed = Embed(title='밭 정보', description=f'ID: {farm.id}', color=const('color.elit'))
+        embed = Embed(title='밭 정보', description=f'ID: {farm.id}', color=const('color.farm'))
         embed.add_field(name='채널', value=farm.get_channel(self.bot).mention)
         embed.add_field(name='소유자', value=owner.display_name)
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}\n{", ".join(members)}', inline=False)
@@ -178,6 +178,30 @@ class FarmCommand(Cog):
             return
 
         await invitee.join(farm, self.bot)
+
+    @command(name='작물', aliases=['crop'],
+             description='밭에 심어진 작물 정보를 확인합니다.')
+    async def crop(self, ctx: Context, *, crop_name: str = ''):
+        if message := check_farm(ctx, self.bot):
+            await ctx.send(message)
+            return
+
+        farm = get_player(ctx.author.id).get_farm()
+
+        if crop_name:
+            crop = farm.get_planted_crop_by_name(crop_name)
+
+            if crop is None:
+                await ctx.send(f':potted_plant: **작물 정보를 확인할 수 없어요!** '
+                               f'`{crop_name}`이라고 입력됐어요. 혹시 밭에 심어져있지 않은 작물은 아닌지 확인해주세요.')
+                return
+
+            await ctx.send(embed=crop.get_embed())
+        else:
+            farm_channel = farm.get_channel(self.bot)
+
+            crop_names = ', '.join(crop.name for crop in farm.get_crops())
+            await ctx.send(f':potted_plant: {farm_channel.mention}에는 현재 __{crop_names}__{i_ga(crop_names)} 심어져 있습니다!')
 
 
 def setup(bot: Bot):

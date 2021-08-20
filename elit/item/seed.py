@@ -42,9 +42,6 @@ class Seed(Item):
 
         amount, planted_at = farm.plant(crop_name, amount)
 
-        embed = Embed(title='작물 심음', color=const('color.elit'))
-        embed.add_field(name='이름', value=crop_name)
-        embed.add_field(name='심은 개수', value=amount)
-        embed.add_field(name='심은 날짜', value=str(planted_at))
-
-        return self.apply_use(amount, f':potted_plant: {farm_channel.mention}에 `{crop_name}` __{amount}개__를 심었습니다.'), embed
+        embed = farm.get_planted_crop_by_name(crop_name).get_embed()
+        return self.apply_use(amount, f':potted_plant: {farm_channel.mention}에 '
+                                      f'`{crop_name}` __{amount}개__를 심었습니다.'), embed

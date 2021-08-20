@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Tuple
 
-from discord import TextChannel, User
+from discord import TextChannel, User, Embed
 from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
@@ -24,6 +24,13 @@ class Crop:
         self.name = crop_name
         self.amount = amount
         self.planted_at = planted_at
+
+    def get_embed(self) -> Embed:
+        embed = Embed(title='작물 정보', color=const('color.crop'))
+        embed.add_field(name='심은 날짜', value=str(self.planted_at), inline=False)
+        embed.add_field(name='이름', value=self.name)
+        embed.add_field(name='심은 개수', value=f'{self.amount}개')
+        return embed
 
 
 class Farm:
@@ -67,7 +74,7 @@ class Farm:
             result += crops.amount
         return result
 
-    def get_planted_crop_with_name(self, name: str) -> Crop:
+    def get_planted_crop_by_name(self, name: str) -> Crop:
         with database.cursor(DictCursor) as cursor:
             cursor.execute('SELECT * FROM farm_crop WHERE farm_id = %s AND crop_name = %s', (self.id, name))
             data = cursor.fetchall()
@@ -83,7 +90,7 @@ class Farm:
         if amount <= 0:
             raise CropCapacityError('이 섬에 더 이상 작물을 심을 수 없습니다.')
 
-        if self.get_planted_crop_with_name(name):
+        if self.get_planted_crop_by_name(name):
             raise ValueError(f'{name}{eun_neun(name)} 이미 심어져 있습니다.')
         else:
             with database.cursor() as cursor:

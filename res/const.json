@@ -27,6 +27,8 @@
     "white_check_mark": "✅"
   },
   "color": {
-    "elit": 8500470
+    "elit": 8500470,
+    "farm": 2088520,
+    "crop": 14356287
   }
 }
