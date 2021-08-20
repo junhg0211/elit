@@ -44,12 +44,18 @@ class FarmCommand(Cog):
         owner = farm.get_owner(self.bot)
         farm_using = farm.get_using()
         members = [self.bot.get_user(member_id).display_name for member_id in farm.get_member_ids()]
+        crop_names = list()
+        for crop in farm.get_crops():
+            crop_names.append(crop.name)
+
         embed = Embed(title='밭 정보', description=f'ID: {farm.id}', color=const('color.elit'))
         embed.add_field(name='채널', value=farm.get_channel(self.bot).mention)
         embed.add_field(name='소유자', value=owner.display_name)
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}\n{", ".join(members)}', inline=False)
         embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)',
                         inline=False)
+        if crop_names:
+            embed.add_field(name='심은 작물', value=', '.join(crop_names))
         embed.set_thumbnail(url=owner.avatar_url)
         await ctx.send(embed=embed)
 
