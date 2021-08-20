@@ -7,6 +7,7 @@ from util import database, eul_reul, eun_neun, i_ga
 class Item:
     type = 0
     name = '아무것도 아님'
+    description = '아무것도 아닙니다'
 
     def __init__(self, item_id: int):
         self.item_data = ItemData(item_id)
@@ -53,6 +54,7 @@ class Item:
 class Item1(Item):
     type = 1
     name = "아무것"
+    description = '아무것입니다.'
 
     def use(self, amount: int, player, bot: Bot) -> str:
         self.check_amount(amount)

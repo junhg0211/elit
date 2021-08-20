@@ -7,6 +7,8 @@ from util import eul_reul, const
 class Check10(Item):
     name = '10원짜리 수표'
     type = 2
+    description = f'10원짜리 수표입니다. ' \
+                  f'사용하면 10{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
     def use(self, amount: int, player, bot: Bot) -> str:
         self.check_amount(amount)

@@ -3,7 +3,7 @@ from typing import Union
 from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, CommandError, MissingRole, command
 
-from elit import get_player, get_item_name_by_type, get_max_type_number
+from elit import get_player, get_item_class_by_type, get_max_type_number, get_item_name_by_type
 from util import const, eul_reul
 
 
@@ -26,14 +26,18 @@ class InventoryCommand(Cog):
         await ctx.send(embed=embed)
 
     @command(name='타입', aliases=['type'], description='아이템 타입 목록을 확인합니다.')
-    async def type(self, ctx: Context):
-        types = list()
-        for type_number in range(get_max_type_number() + 1):
-            if (name := get_item_name_by_type(type_number)) is not None:
-                types.append(f'{type_number}: {name}')
-
-        embed = Embed(title='사용 가능한 아이템 타입 목록', color=const('color.elit'),
-                      description='\n'.join(types))
+    async def type(self, ctx: Context, type_number: int = -1):
+        if type_number == -1:
+            embed = Embed(title='사용 가능한 아이템 타입 목록', color=const('color.elit'))
+            for type_number in range(get_max_type_number() + 1):
+                if (item_class := get_item_class_by_type(type_number)) is not None:
+                    embed.add_field(name=f'`{type_number}`: {item_class.name}',
+                                    value=item_class.description, inline=False)
+        else:
+            item_type = get_item_class_by_type(type_number)
+            embed = Embed(title='아이템 정보', description=item_type.name, color=const('color.elit'))
+            embed.add_field(name='ID', value=item_type.type)
+            embed.add_field(name='설명', value=item_type.description, inline=False)
         await ctx.send(embed=embed)
 
     @command(name='사용', aliases=['use'], description='아이템을 사용합니다.')
