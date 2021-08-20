@@ -18,8 +18,8 @@ def get_item_class_by_type(item_type: int):
             return item_class
 
 
-def get_item_object(item_type, amount, item_id) -> elit.item.Item:
-    return get_item_class_by_type(item_type)(amount, item_id)
+def get_item_object(item_type, item_id) -> elit.item.Item:
+    return get_item_class_by_type(item_type)(item_id)
 
 
 def get_item_name_by_type(item_type: int) -> str:

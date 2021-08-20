@@ -8,9 +8,10 @@ class Item:
     type = 0
     name = '아무것도 아님'
 
-    def __init__(self, amount: int, item_id: int):
-        self.amount = amount
+    def __init__(self, item_id: int):
         self.item_data = ItemData(item_id)
+
+        self.amount = self.get_amount()
 
     def set_amount(self, amount: int) -> 'Item':
         self.amount = amount
@@ -20,6 +21,12 @@ class Item:
             else:
                 cursor.execute('DELETE FROM inventory WHERE item_id = %s', self.item_data.id)
         return self
+
+    def get_amount(self) -> int:
+        with database.cursor() as cursor:
+            cursor.execute('SELECT amount FROM inventory WHERE item_id = %s', self.item_data.id)
+            data = cursor.fetchall()
+            return data[0][0]
 
     def use(self, amount: int, player, bot: Bot) -> str:
         self.check_amount(amount)

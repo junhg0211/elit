@@ -4,7 +4,7 @@ from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, CommandError, MissingRole, command
 
 from elit import get_player, get_item_name_by_type, get_max_type_number
-from util import const, eul_reul, eun_neun
+from util import const, eul_reul
 
 
 class InventoryCommand(Cog):
@@ -20,7 +20,8 @@ class InventoryCommand(Cog):
         inventory_capacity = inventory.get_capacity()
         embed.add_field(name='용량', value=f'{inventory_capacity}/{inventory.size} '
                                          f'({inventory_capacity / inventory.size * 100:.2f}%)', inline=False)
-        embed.add_field(name='구성품', value=str(inventory) if inventory else '(없음)')
+        embed.add_field(name='소지금', value=f'{player.money}{const("currency.default")}')
+        embed.add_field(name='구성품', value=str(inventory) if inventory else '(없음)', inline=False)
         embed.set_thumbnail(url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
 

@@ -12,7 +12,13 @@ class ItemData:
 
     def set_data(self, key: str, value):
         self.data[key] = value
+        self.save_data()
         return self
+
+    def there_is_data(self, key: str) -> bool:
+        with database.cursor() as cursor:
+            cursor.execute('SELECT * FROM item_data WHERE item_id = %s AND property_key = %s', (self.id, key))
+            return bool(cursor.fetchall())
 
     def get_data(self, key: str):
         return self.data[key]

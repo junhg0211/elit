@@ -38,7 +38,7 @@ class PlayerInventory:
     def __bool__(self) -> bool:
         return bool(self.items)
 
-    def is_item(self, item_type: int) -> bool:
+    def has_item(self, item_type: int) -> bool:
         """이 아이템을 가지고 있는지 확인합니다."""
         for item in self.items:
             if item.type == item_type:
@@ -90,7 +90,7 @@ class PlayerInventory:
             items = cursor.fetchall()
         self.items = list()
         for item_type, amount, item_id in items:
-            item = get_item_object(item_type, amount, item_id)
+            item = get_item_object(item_type, item_id)
             if item is not None:
                 self.items.append(item)
         return self
@@ -130,6 +130,9 @@ class Player:
         with database.cursor() as cursor:
             cursor.execute('UPDATE player SET money = %s WHERE discord_id = %s', (amount, self.discord_id))
         return self
+
+    def earn_money(self, amount: int) -> 'Player':
+        return self.set_money(self.money + amount)
 
     def get_user(self, bot: Bot) -> User:
         return bot.get_user(self.discord_id)
