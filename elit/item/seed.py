@@ -6,7 +6,7 @@ from discord.ext.commands import Bot, Context
 
 from elit.exception import ChannelError
 from elit.item import Item
-from util import byte_len, const
+from util import byte_len, const, message_author_check
 
 
 class Seed(Item):
@@ -27,7 +27,7 @@ class Seed(Item):
         await ctx.send(f':potted_plant: 심을 농작물의 이름을 입력해주세요. 농작물은 __{amount}개__를 심습니다. '
                        f'(`취소` 또는 `cancel`이라고 입력하면 심기가 취소됩니다.)')
         try:
-            message = await bot.wait_for('message', timeout=15)
+            message = await bot.wait_for('message', check=message_author_check(ctx.author), timeout=15)
         except AsyncioTimeoutError:
             raise AsyncioTimeoutError(f':x: {ctx.author.mention} **작물 심기가 취소되었습니다.** '
                                       f'작물 이름 입력 시간이 초과되었어요...')
