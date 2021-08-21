@@ -12,6 +12,9 @@ class Crop(Item):
         self.name = self.get_name()
         self.quality = self.get_quality()
 
+    def __str__(self):
+        return f'`{self.item_data.id}`: 작물-{self.name}'
+
     def set_name(self, name: str) -> 'Crop':
         self.name = name
         self.item_data.set_data('crop_name', name)
@@ -19,7 +22,7 @@ class Crop(Item):
 
     def set_quality(self, quality: float) -> 'Crop':
         self.quality = quality
-        self.item_data.set_data('quality', str(quality))
+        self.item_data.set_data('quality', quality)
         return self
 
     def get_name(self) -> str:
@@ -30,4 +33,4 @@ class Crop(Item):
         if raw_quality is None:
             return 0.0
         else:
-            return float(raw_quality)
+            return raw_quality

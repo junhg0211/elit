@@ -7,7 +7,7 @@ from pymysql.cursors import DictCursor
 
 from elit import Farm
 from elit.item import Item
-from elit.item_util import get_item_object
+from elit.item_util import get_item_object, duplication_prohibited
 from elit.exception import CapacityError, InventoryCapacityError
 from util import database
 
@@ -38,15 +38,15 @@ class PlayerInventory:
     def __bool__(self) -> bool:
         return bool(self.items)
 
-    def has_item(self, item_type: int) -> bool:
+    def has_item(self, item_id: int) -> bool:
         """이 아이템을 가지고 있는지 확인합니다."""
         for item in self.items:
-            if item.type == item_type:
+            if item.item_data.id == item_id:
                 return True
         return False
 
-    def get_item(self, item_type: int) -> Optional[Item]:
-        """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 `None`을 반환합니다."""
+    def get_item_by_type(self, item_type: int) -> Optional[Item]:
+        """가지고 있는 아이템 객체를 한 개 반환합니다. 만약 아이템을 가지고 있지 않다면 `None`을 반환합니다."""
         for item in self.items:
             if item.type == item_type:
                 return item
@@ -73,10 +73,11 @@ class PlayerInventory:
         if amount <= 0:
             raise InventoryCapacityError('이 인벤토리에 더 이상 아이템을 담을 수 없습니다.')
 
-        item = self.get_item(item_type)
-        if item is not None:
-            item.set_amount(item.amount + amount)
-            return item, amount
+        if item_type not in duplication_prohibited:
+            item = self.get_item_by_type(item_type)
+            if item is not None:
+                item.set_amount(item.amount + amount)
+                return item, amount
 
         item_id = next_item_id()
         with database.cursor() as cursor:

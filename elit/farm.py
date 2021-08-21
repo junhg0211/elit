@@ -104,7 +104,10 @@ class Crop:
         return get_grade_duration(self.get_grade())
 
     def get_prise(self) -> int:
-        return round(get_prise(self.name) * self.get_quality()) * self.amount
+        return round(self.get_maximum_prise() * self.get_quality())
+
+    def get_maximum_prise(self) -> int:
+        return int(get_prise(self.name)) * self.amount
 
     def get_quality(self):
         now = datetime.now()
@@ -150,10 +153,12 @@ class Crop:
         embed.add_field(name='현재 품질', value=f'__{self.get_quality() * 100:.2f}%__ {self.quality_derivative_emoji()}')
         embed.add_field(name='심은 날짜', value=str(self.planted_at))
         embed.add_field(name='현재 가격', value=f'{self.get_prise()}{const("currency.default")}')
+        embed.add_field(name='최고 가격', value=f'{self.get_maximum_prise()}{const("currency.default")}')
         embed.add_field(name='작물 등급', value=f'**{self.get_grade_name()}** (익은 후 {self.get_grade_duration()}간 최상 품질)',
                         inline=False)
         embed.add_field(name='최상 품질 재배 기간',
-                        value=f'{self.planted_at + self.get_duration()}부터\n'
+                        value=f'심은 시각부터 {self.get_duration()}:\n'
+                              f'{self.planted_at + self.get_duration()}부터\n'
                               f'{self.planted_at + self.get_duration() + self.get_grade_duration()}까지', inline=False)
         return embed
 

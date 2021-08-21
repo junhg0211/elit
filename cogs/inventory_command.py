@@ -3,7 +3,8 @@ from typing import Union
 from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, CommandError, MissingRole, command
 
-from elit import get_player, get_item_class_by_type, get_max_type_number, get_item_name_by_type
+from elit import get_player, get_item_class_by_type, get_max_type_number, get_item_name_by_type, get_item_object, \
+    get_item_object_by_id
 from elit.exception import InventoryCapacityError
 from util import const, eul_reul
 
@@ -39,22 +40,25 @@ class InventoryCommand(Cog):
             embed = Embed(title='아이템 정보', description=item_type.name, color=const('color.elit'))
             embed.add_field(name='ID', value=item_type.type)
             embed.add_field(name='설명', value=item_type.description, inline=False)
+            fields = '`' + '`, `'.join(item_type(0).get_fields()) + '`'
+            if fields != '``':
+                embed.add_field(name='데이터 키', value=fields)
         await ctx.send(embed=embed)
 
     @command(name='사용', aliases=['use'], description='아이템을 사용합니다.')
-    async def use(self, ctx: Context, item_type: int, count: Union[int, str] = 1):
+    async def use(self, ctx: Context, item_id: int, count: Union[int, str] = 1):
         player = get_player(ctx.author.id)
         inventory = player.get_inventory()
-        item = inventory.get_item(item_type)
-
-        item_name = get_item_name_by_type(item_type)
-        if not item_name:
-            await ctx.send(f':roll_of_paper: {ctx.author.mention} **아이템 정보를 확인할 수 없습니다!** '
-                           f'아이템 타입 번호를 잘 입력했는지 확인해주세요.')
-            return
+        item = get_item_object_by_id(item_id)
 
         if item is None:
-            await ctx.send(f':roll_of_paper: **{ctx.author.mention}님은 `{item_name}`{eul_reul(item_name)} 가지고 있지 않아요!**')
+            await ctx.send(f':roll_of_paper: {ctx.author.mention} **아이템 정보를 확인할 수 없습니다!** '
+                           f'아이템 번호를 잘 입력했는지 확인해주세요.')
+            return
+
+        if not inventory.has_item(item_id):
+            await ctx.send(f':roll_of_paper: '
+                           f'**{ctx.author.mention}님은 `{item.name}`{eul_reul(item.name)} 가지고 있지 않아요!**')
             return
 
         if count in ('all', '모두', '전부', '다'):
@@ -76,13 +80,14 @@ class InventoryCommand(Cog):
             return
 
         try:
-            _, amount = get_player(user.id).get_inventory().earn_item(item_type, amount)
+            item, amount = get_player(user.id).get_inventory().earn_item(item_type, amount)
         except InventoryCapacityError:
             await ctx.send(f':baggage_claim: **__{user.display_name}__님의 인벤토리가 가득 찼습니다!!** '
                            f'더 이상 아이템을 받을 수 없습니다.')
         else:
             await ctx.send(f':baggage_claim: __{user.display_name}__님에게 '
-                           f'__{get_item_name_by_type(item_type)} {amount}개__를 주었습니다!')
+                           f'__{get_item_name_by_type(item_type)} {amount}개__를 주었습니다! '
+                           f'아이템의 아이디는 `{item.item_data.id}`입니다.')
 
     @give.error
     async def give_error(self, ctx: Context, error: CommandError):

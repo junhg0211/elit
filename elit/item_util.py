@@ -1,6 +1,11 @@
 from math import inf
+from typing import Optional
 
 import elit.item
+from util import database
+
+
+duplication_prohibited = (elit.item.Crop.type,)
 
 
 def get_item_classes():
@@ -20,6 +25,21 @@ def get_item_class_by_type(item_type: int):
 
 def get_item_object(item_type, item_id) -> elit.item.Item:
     return get_item_class_by_type(item_type)(item_id)
+
+
+def get_item_type(item_id) -> Optional[int]:
+    with database.cursor() as cursor:
+        cursor.execute('SELECT item_type FROM inventory WHERE item_id = %s', item_id)
+        data = cursor.fetchall()
+    if data:
+        return data[0][0]
+
+
+def get_item_object_by_id(item_id: int) -> elit.item.Item:
+    item_type = get_item_type(item_id)
+    if item_type is None:
+        return
+    return get_item_object(item_type, item_id)
 
 
 def get_item_name_by_type(item_type: int) -> str:

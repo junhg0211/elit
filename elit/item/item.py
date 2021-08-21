@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Callable
 
 from discord import Embed
 from discord.ext.commands import Bot, Context
@@ -21,6 +21,11 @@ class Item:
         self.check_amount(amount)
         return self.apply_use(amount, f'`{self.name}`{eul_reul(self.name)} {amount}개 사용했다!'), None
 
+    def get_fields(self) -> filter:
+        return filter(lambda x: not x.startswith('__')
+                                and x not in ('item_data', 'amount', 'type', 'description', 'name')
+                                and not isinstance(getattr(self, x), Callable), dir(self))
+
     def set_amount(self, amount: int) -> 'Item':
         self.amount = amount
         with database.cursor() as cursor:
@@ -30,10 +35,11 @@ class Item:
                 cursor.execute('DELETE FROM inventory WHERE item_id = %s', self.item_data.id)
         return self
 
-    def get_amount(self) -> int:
+    def get_amount(self) -> Optional[int]:
         with database.cursor() as cursor:
             cursor.execute('SELECT amount FROM inventory WHERE item_id = %s', self.item_data.id)
             data = cursor.fetchall()
+        if data:
             return data[0][0]
 
     def apply_use(self, amount: int, use_message: str) -> str:
@@ -48,7 +54,7 @@ class Item:
             raise ValueError(f':x: **{self.name}{eun_neun(self.name)} {self.amount}개까지 사용할 수 있습니다.**')
 
     def __str__(self):
-        return f'`{self.type}`: {self.name}'
+        return f'`{self.item_data.id}`: {self.name}'
 
     def __repr__(self):
         return f'{self} ({self.amount})'
