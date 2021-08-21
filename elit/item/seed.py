@@ -6,7 +6,7 @@ from discord.ext.commands import Bot, Context
 
 from elit.exception import ChannelError
 from elit.item import Item
-from util import byte_len, message_author_check
+from util import message_author_check
 
 
 class Seed(Item):

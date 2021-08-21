@@ -35,7 +35,7 @@ def get_item_type(item_id) -> Optional[int]:
         return data[0][0]
 
 
-def get_item_object_by_id(item_id: int) -> elit.item.Item:
+def get_item_object_by_id(item_id: int) -> Optional[elit.item.Item]:
     item_type = get_item_type(item_id)
     if item_type is None:
         return

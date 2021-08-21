@@ -23,8 +23,8 @@ class Item:
 
     def get_fields(self) -> filter:
         return filter(lambda x: not x.startswith('__')
-                                and x not in ('item_data', 'amount', 'type', 'description', 'name')
-                                and not isinstance(getattr(self, x), Callable), dir(self))
+                      and x not in ('item_data', 'amount', 'type', 'description', 'name')
+                      and not isinstance(getattr(self, x), Callable), dir(self))
 
     def set_amount(self, amount: int) -> 'Item':
         self.amount = amount
