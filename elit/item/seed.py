@@ -36,9 +36,8 @@ class Seed(Item):
                 raise ValueError(':x: **심기를 취소했습니다.**')
             crop_name = message.content
 
-        if byte_len(crop_name) > 16:
-            raise ValueError(f':x: {ctx.author.mention} **작물 이름이 너무 길어요!** '
-                             f'작물 이름은 16바이트(한글 8글자, 영문 16글자) 이내로 지어주세요!')
+        if len(crop_name) > 16:
+            raise ValueError(f':x: {ctx.author.mention} **작물 이름이 너무 길어요!** 작물 이름은 16글자 이내로 지어주세요!')
 
         amount, planted_at = farm.plant(crop_name, amount)
 
