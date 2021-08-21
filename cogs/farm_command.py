@@ -200,8 +200,11 @@ class FarmCommand(Cog):
         else:
             farm_channel = farm.get_channel(self.bot)
 
-            crop_names = ', '.join(crop.name for crop in farm.get_crops())
-            await ctx.send(f':potted_plant: {farm_channel.mention}에는 현재 __{crop_names}__{i_ga(crop_names)} 심어져 있습니다!')
+            embed = Embed(title='밭에 심어져 있는 작물', description=farm_channel.mention, color=const('color.farm'))
+            for crop in farm.get_crops():
+                name, value = crop.get_line()
+                embed.add_field(name=name, value=value, inline=False)
+            await ctx.send(embed=embed)
 
 
 def setup(bot: Bot):
