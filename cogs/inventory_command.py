@@ -76,13 +76,13 @@ class InventoryCommand(Cog):
             return
 
         try:
-            amount = get_player(user.id).get_inventory().add_item(item_type, amount)
+            _, amount = get_player(user.id).get_inventory().earn_item(item_type, amount)
         except InventoryCapacityError:
             await ctx.send(f':baggage_claim: **__{user.display_name}__님의 인벤토리가 가득 찼습니다!!** '
                            f'더 이상 아이템을 받을 수 없습니다.')
         else:
             await ctx.send(f':baggage_claim: __{user.display_name}__님에게 '
-                           f'__{get_item_name_by_type(item_type)}__ __{amount}개__를 주었습니다!')
+                           f'__{get_item_name_by_type(item_type)} {amount}개__를 주었습니다!')
 
     @give.error
     async def give_error(self, ctx: Context, error: CommandError):

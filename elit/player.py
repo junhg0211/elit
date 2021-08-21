@@ -62,7 +62,7 @@ class PlayerInventory:
         """더 담을 수 있는 아이템 개수"""
         return self.size - self.get_capacity()
 
-    def add_item(self, item_type: int, amount: int = 1) -> int:
+    def earn_item(self, item_type: int, amount: int = 1) -> Tuple[Item, int]:
         """
         인벤토리에 아이템을 담습니다.
 
@@ -76,12 +76,13 @@ class PlayerInventory:
         item = self.get_item(item_type)
         if item is not None:
             item.set_amount(item.amount + amount)
-            return amount
+            return item, amount
 
+        item_id = next_item_id()
         with database.cursor() as cursor:
-            cursor.execute('INSERT INTO inventory(discord_id, item_type, amount) '
-                           'VALUES (%s, %s, %s)', (self.discord_id, item_type, amount))
-        return amount
+            cursor.execute('INSERT INTO inventory '
+                           'VALUES (%s, %s, %s, %s)', (self.discord_id, item_type, amount, item_id))
+        return get_item_object(item_type, item_id), amount
 
     def load_items(self) -> 'PlayerInventory':
         with database.cursor() as cursor:

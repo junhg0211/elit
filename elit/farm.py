@@ -9,7 +9,7 @@ from discord.ext.commands import Bot
 from pymysql.cursors import DictCursor
 
 from elit.exception import CropCapacityError
-from util import database, const, eun_neun, linear, cubic
+from util import database, const, eun_neun, linear, cubic, i_ga
 
 
 def next_farm_id():
@@ -222,6 +222,15 @@ class Farm:
                 cursor.execute('INSERT INTO farm_crop VALUES (%s, %s, %s, %s)',
                                (self.id, name, amount, planted_at := datetime.now()))
             return amount, planted_at
+
+    def harvest(self, crop_name: str) -> 'Farm':
+        crop = self.get_planted_crop_by_name(crop_name)
+        if crop is None:
+            raise ValueError(f'밭에 {crop_name}{i_ga(crop_name)} 심어져있지 않습니다.')
+
+        with database.cursor() as cursor:
+            cursor.execute('DELETE FROM farm_crop WHERE crop_name = %s AND farm_id = %s', (crop_name, self.id))
+        return self
 
     def member_count(self) -> int:
         with database.cursor() as cursor:

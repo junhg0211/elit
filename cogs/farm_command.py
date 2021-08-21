@@ -4,6 +4,7 @@ from discord import Embed, User
 from discord.ext.commands import Cog, Bot, group, Context, command
 
 from elit import Farm, next_farm_id, new_farm, get_player
+from elit.item import Crop
 from util import const, emoji_reaction_check, eul_reul, i_ga
 
 
@@ -205,6 +206,31 @@ class FarmCommand(Cog):
                 name, value = crop.get_line()
                 embed.add_field(name=name, value=value, inline=False)
             await ctx.send(embed=embed)
+
+    @command(name='수확', aliases=['추수', 'harvest'],
+             description='밭에 있는 작물을 수확합니다.')
+    async def harvest(self, ctx: Context, *, crop_name: str):
+        if message := check_farm(ctx, self.bot):
+            await ctx.send(message)
+            return
+
+        player = get_player(ctx.author.id)
+        farm = player.get_farm()
+        crop = farm.get_planted_crop_by_name(crop_name)
+
+        try:
+            farm.harvest(crop.name)
+        except ValueError:
+            await ctx.send(f':potted_plant: **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
+                           f'수확하려고 하는 작물의 이름이 `{crop_name}`이 맞는지 다시 한 번 확인해주세요.')
+            return
+
+        crop_item: Crop
+        crop_item, amount = player.get_inventory().earn_item(4, crop.amount)
+        crop_item.set_name(crop.name)
+        crop_item.set_quality(crop.get_quality())
+
+        await ctx.send(f':potted_plant: __{crop.name}__{eul_reul(crop.name)} __{amount}개__ 수확했습니다!')
 
 
 def setup(bot: Bot):

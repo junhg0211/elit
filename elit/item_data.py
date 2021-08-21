@@ -21,7 +21,10 @@ class ItemData:
             return bool(cursor.fetchall())
 
     def get_data(self, key: str):
-        return self.data[key]
+        if key in self.data:
+            return self.data[key]
+        else:
+            return None
 
     def save_data(self):
         with database.cursor() as cursor:
