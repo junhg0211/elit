@@ -1,3 +1,4 @@
+# noinspection SpellCheckingInspection
 def a_ya(string: str):
     string = string[-1]
 

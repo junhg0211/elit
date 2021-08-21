@@ -46,7 +46,7 @@ class PlayerInventory:
         return False
 
     def get_item(self, item_type: int) -> Optional[Item]:
-        """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 None을 반환합니다."""
+        """가지고 있는 아이템 객체를 반환합니다. 만약 아이템을 가지고 있지 않다면 `None`을 반환합니다."""
         for item in self.items:
             if item.type == item_type:
                 return item
@@ -99,7 +99,7 @@ class Player:
     def __init__(self, discord_id: int):
         """
         게임 플레이어로써의 유저 객체입니다.
-        아이디를 입력하면 데이터베이스에서 자동으로 해당 아이디에 해당하는 플레이어 정보를 fetch하여 객체를 생성합니다.
+        아이디를 입력하면 데이터베이스에서 자동으로 해당 아이디에 해당하는 플레이어 정보를 ``fetch`` 하여 객체를 생성합니다.
 
         :param discord_id: 유저 객체의 아이디.
         :exception ValueError: `discord_id`에 해당하는 플레이어가 데이터베이스에 존재하지 않을 때 발생합니다.
@@ -186,7 +186,7 @@ def get_player(discord_id: int) -> Player:
 
 def get_money_leaderboard(limit: int, from_: int = 0) -> tuple:
     """
-    ``discord_id``, ``money``가 담겨있는 raw data가 다음과 같은 형태로 주어집니다.
+    ``discord_id``, ``money`` 가 담겨있는 ``raw data`` 가 다음과 같은 형태로 주어집니다.
     ``({'discord_id': ..., 'money': ...}, {'discord_id': ..., 'money': ...})``
 
     :param limit: 정보의 개수
