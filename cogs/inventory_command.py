@@ -60,7 +60,7 @@ class InventoryCommand(Cog):
                            f'**{ctx.author.mention}님은 `{item.name}`{eul_reul(item.name)} 가지고 있지 않아요!**')
             return
 
-        if count in ('all', '모두', '전부', '다'):
+        if count in const('all_word'):
             count = item.amount
 
         try:

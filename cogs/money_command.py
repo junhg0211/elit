@@ -4,7 +4,7 @@ from discord import User, Embed
 from discord.ext.commands import Cog, Bot, group, Context, has_role, MissingRole, CommandError
 
 from elit import get_money_leaderboard, get_player
-from util import const, eul_reul, i_ga, na_ina, emoji_reaction_check
+from util import const, eul_reul, i_ga, ina, emoji_reaction_check
 
 
 class MoneyCommand(Cog):
@@ -29,7 +29,7 @@ class MoneyCommand(Cog):
 
         if amount <= 0:
             await ctx.send(f'{emoji} {ctx.author.mention} '
-                           f'**0{currency}{na_ina(currency)} 0{currency}보다 적은 양은 송금할 수 없습니다!**')
+                           f'**0{currency}{ina(currency)} 0{currency}보다 적은 양은 송금할 수 없습니다!**')
             return
 
         sender = get_player(ctx.author.id)

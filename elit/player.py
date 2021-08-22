@@ -127,12 +127,22 @@ class Player:
         return PlayerInventory(self.discord_id)
 
     def set_money(self, amount: int) -> 'Player':
+        """
+        ``self`` 의 소지금을 ``amount`` 로 설정합니다.
+
+        :except ValueError: 소지금을 음수로 설정했을 때 발생합니다.
+        """
+        if amount < 0:
+            raise ValueError('소지금은 음수가 될 수 없습니다.')
         self.money = amount
         with database.cursor() as cursor:
             cursor.execute('UPDATE player SET money = %s WHERE discord_id = %s', (amount, self.discord_id))
         return self
 
     def earn_money(self, amount: int) -> 'Player':
+        """
+        돈을 ``amount`` 만큼 얻습니다.
+        """
         return self.set_money(self.money + amount)
 
     def get_user(self, bot: Bot) -> User:

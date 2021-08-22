@@ -27,6 +27,12 @@ class Item:
                       and not isinstance(getattr(self, x), Callable), dir(self))
 
     def set_amount(self, amount: int) -> 'Item':
+        """
+        아이템의 개수를 설정합니다.
+        아이템의 개수가 0개로 설정되면 데이터베이스의 ``inventory`` 테이블 상에서 아이템을 제거합니다.
+
+        :param amount: 설정할 아이템의 개수
+        """
         self.amount = amount
         with database.cursor() as cursor:
             if self.amount:
@@ -41,6 +47,9 @@ class Item:
             data = cursor.fetchall()
         if data:
             return data[0][0]
+
+    def get_prise_per_piece(self) -> int:
+        return 0
 
     def apply_use(self, amount: int, use_message: str) -> str:
         self.set_amount(self.amount - amount)

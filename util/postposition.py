@@ -59,7 +59,7 @@ def euro(string: str):
 
 
 # noinspection SpellCheckingInspection
-def na_ina(string: str):
+def ina(string: str):
     string = string[-1]
 
     if 44032 <= ord(string):
@@ -68,3 +68,15 @@ def na_ina(string: str):
         return '이나' if string in '360' else '나'
     else:
         return '이나' if string not in 'aeiouyw' else '나'
+
+
+# noinspection SpellCheckingInspection
+def irago(string: str):
+    string = string[-1]
+
+    if 44032 <= ord(string):
+        return '라고' if (ord(string) - 44032) % 28 in [0, 8] else '이라고'
+    elif string in '1234567890':
+        return '이라고' if string in '360' else '라고'
+    else:
+        return '이라고' if string not in 'aeiouyw' else '라고'

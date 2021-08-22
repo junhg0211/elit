@@ -44,3 +44,6 @@ class Seed(Item):
         embed = farm.get_planted_crop_by_name(crop_name).get_embed()
         return self.apply_use(amount, f':potted_plant: {farm_channel.mention}에 '
                                       f'`{crop_name}` __{amount}개__를 심었습니다.'), embed
+
+    def get_prise_per_piece(self) -> int:
+        return 10
