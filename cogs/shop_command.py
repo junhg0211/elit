@@ -2,7 +2,7 @@ from typing import Union
 
 from discord.ext.commands import Cog, Bot, command, Context
 
-from elit import Player, get_item_object_by_id
+from elit import Player, get_item_object_by_id, get_player
 from util import const, eul_reul, irago
 
 
@@ -32,7 +32,7 @@ class Shop(Cog):
             await ctx.send(message)
             return
 
-        player = Player(ctx.author.id)
+        player = get_player(ctx.author.id)
         inventory = player.get_inventory()
 
         if not inventory.has_item(item_id):
