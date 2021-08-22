@@ -20,10 +20,11 @@ class InventoryCommand(Cog):
         embed = Embed(title='인벤토리', description=ctx.author.display_name, color=const('color.elit'))
         inventory_capacity = inventory.get_capacity()
         embed.add_field(name='용량', value=f'{inventory_capacity}/{inventory.size} '
-                                         f'({inventory_capacity / inventory.size * 100:.2f}%)', inline=False)
+                                         f'({inventory_capacity / inventory.size * 100:.2f}%)')
         embed.add_field(name='소지금', value=f'{player.money}{const("currency.default")}')
         embed.add_field(name='구성품', value=str(inventory) if inventory else '(없음)', inline=False)
         embed.set_thumbnail(url=ctx.author.avatar_url)
+        embed.set_footer(text='`엘 아이템 <아이템 ID>`를 통해서 아이템에 대한 상세 정보를 확인할 수 있습니다.')
         await ctx.send(embed=embed)
 
     @command(name='타입', aliases=['type'], description='아이템 타입 목록을 확인합니다.')
@@ -69,6 +70,32 @@ class InventoryCommand(Cog):
             log = str(e)
             embed = None
         await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}', embed=embed)
+
+    @command(name='아이템', aliases=['item'], description='아이템 정보를 확인합니다.')
+    async def item(self, ctx: Context, item_id: int):
+        player_inventory = get_player(ctx.author.id).get_inventory()
+
+        if not player_inventory.has_item(item_id):
+            await ctx.send(f':squeeze_bottle: **{ctx.author.mention}님은 이 아이템을 가지고 있지 않아요!** '
+                           f'이 명령어는 가지고 있는 아이템에 대해서만 사용할 수 있어요.')
+            return
+
+        item = get_item_object_by_id(item_id)
+
+        multiple_prise = f' (총 {item.get_prise_per_piece() * item.amount}{const("currency.default")})' \
+            if item.amount != 1 else ''
+
+        embed = Embed(title='아이템 정보', description=item.name, color=const('color.elit'))
+        embed.add_field(name='ID', value=str(item.item_data.id))
+        embed.add_field(name='소유자', value=ctx.author.display_name)
+        embed.add_field(name='아이템 타입', value=f'{get_item_class_by_type(item.type).name} ({item.type})')
+        embed.add_field(name='아이템 이름', value=str(item.name))
+        embed.add_field(name='개수', value=f'{item.amount}개')
+        embed.add_field(name='아이템 판매 시 가격',
+                        value=f'{item.get_prise_per_piece()}{const("currency.default")}/개{multiple_prise}')
+        embed.set_thumbnail(url=ctx.author.avatar_url)
+
+        await ctx.send(embed=embed)
 
     @has_role(const('role.enifia'))
     @command(name='주기', aliases=['give'], description='아이템을 줍니다.', hidden=True)
