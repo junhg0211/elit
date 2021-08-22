@@ -31,7 +31,7 @@ class General(Cog):
 
         embed = Embed(title=f'**{ctx.author.display_name}**님의 정보', color=const('color.elit'))
         embed.add_field(name='서버 가입 일자', value=str(ctx.author.joined_at), inline=False)
-        embed.add_field(name='소지금', value=f'{player.money}{const("currency.default")}')
+        embed.add_field(name='소지금', value=f'__{player.money}{const("currency.default")}__')
         embed.add_field(name='소속되어있는 밭', value='(없음)' if farm is None else farm.get_channel(self.bot).mention)
         embed.set_thumbnail(url=ctx.author.avatar_url)
 

@@ -52,12 +52,12 @@ class FarmCommand(Cog):
         embed = Embed(title='밭 정보', description=f'ID: {farm.id}', color=const('color.farm'))
         embed.add_field(name='채널', value=farm.get_channel(self.bot).mention)
         embed.add_field(name='소유자', value=owner.display_name)
-        embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}\n{", ".join(members)}', inline=False)
-        embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)',
-                        inline=False)
+        embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)')
+        embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}: {", ".join(members)}', inline=False)
         if crop_names:
-            embed.add_field(name='심은 작물', value=', '.join(crop_names))
+            embed.add_field(name='심은 작물', value=', '.join(crop_names), inline=False)
         embed.set_thumbnail(url=owner.avatar_url)
+        embed.set_footer(text='`엘 작물`을 통해서 밭에 심어져 있는 작물들에 대한 정보를 확인할 수 있습니다.')
         await ctx.send(embed=embed)
 
     @farm.command(name='생성', aliases=['create'], description='새로운 밭을 생성합니다.')
@@ -205,6 +205,8 @@ class FarmCommand(Cog):
             for crop in farm.get_crops():
                 name, value = crop.get_line()
                 embed.add_field(name=name, value=value, inline=False)
+            embed.set_thumbnail(url=farm.get_owner(self.bot).avatar_url)
+            embed.set_footer(text='`엘 작물 <작물 이름>`을 통해서 작물에 대한 상세 정보를 확인할 수 있습니다.')
             await ctx.send(embed=embed)
 
     @command(name='수확', aliases=['추수', 'harvest'],
