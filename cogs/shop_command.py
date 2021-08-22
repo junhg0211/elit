@@ -2,7 +2,7 @@ from typing import Union
 
 from discord.ext.commands import Cog, Bot, command, Context
 
-from elit import Player, get_item_object_by_id, get_player
+from elit import get_item_object_by_id, get_player
 from util import const, eul_reul, irago
 
 
