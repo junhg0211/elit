@@ -138,10 +138,16 @@ class Crop:
             return ':arrow_down:'
 
     def get_line(self) -> Tuple[str, str]:
+        now = datetime.now()
+        if now < (good_from := self.planted_at + self.get_duration()):
+            good_quality = f'{good_from}부터'
+        else:
+            good_quality = f'{good_from + self.get_grade_duration()}까지'
+
         name = f'__{self.name}__, {self.amount}개'
         value = f'- **심은 날짜**: {self.planted_at}\n' \
                 f'- **작물 등급**: **{self.get_grade_name()}** ({self.get_grade_duration()})\n' \
-                f'- **최상 품질**: {self.planted_at + self.get_duration()}부터\n' \
+                f'- **최상 품질**: {good_quality}\n' \
                 f'- **현재 가격**: __{self.get_prise()}{const("currency.default")}__\n' \
                 f'- **현재 품질**: __{self.get_quality() * 100:.2f}%__ {self.quality_derivative_emoji()}'
         return name, value

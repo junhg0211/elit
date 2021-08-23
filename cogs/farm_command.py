@@ -201,10 +201,14 @@ class FarmCommand(Cog):
         else:
             farm_channel = farm.get_channel(self.bot)
 
+            not_crop = True
             embed = Embed(title='밭에 심어져 있는 작물', description=farm_channel.mention, color=const('color.farm'))
             for crop in farm.get_crops():
                 name, value = crop.get_line()
                 embed.add_field(name=name, value=value, inline=False)
+                not_crop = False
+            if not_crop:
+                embed.add_field(name='(없음)', value='(없음)')
             embed.set_thumbnail(url=farm.get_owner(self.bot).avatar_url)
             embed.set_footer(text='`엘 작물 <작물 이름>`을 통해서 작물에 대한 상세 정보를 확인할 수 있습니다.')
             await ctx.send(embed=embed)
