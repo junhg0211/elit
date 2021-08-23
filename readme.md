@@ -8,3 +8,4 @@
 * 밭 용량 늘리는 방법
 * 채굴장
 * `CommandNotFound` 예외 처리
+* `BadArgument` 예외 처리
