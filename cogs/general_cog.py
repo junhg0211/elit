@@ -1,5 +1,8 @@
+import traceback
+from datetime import datetime
+
 from discord import Embed
-from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand
+from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand, CommandError, MissingRequiredArgument
 
 from elit import Player, new_player, Farm
 from util import const
@@ -16,6 +19,15 @@ class General(Cog):
             'help': ''
         })
         bot.help_command = DefaultHelpCommand(command_attrs=self.bot.help_command.command_attrs)
+
+    @Cog.listener()
+    async def on_command_error(self, ctx: Context, error: CommandError):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f':x: **커맨드 구문을 놓쳤습니다!** 커맨드를 구문에 맞게 입력했는지 확인해주세요. '
+                           f'커맨드 구문을 확인하려면 `엘 도움말 {ctx.command}`를 사용할 수도 있습니다.')
+        print(f'{datetime.now()} `{ctx.guild} #{ctx.channel}`에서 오류 발생이 감지되었습니다.\n'
+              f'\t메시지 내용: {repr(ctx.message.content)}')
+        traceback.print_exception(error.__class__, error, error.__traceback__)
 
     @command(name='정보', aliases=['info', 'information'], description='플레이어 정보를 확인합니다.')
     async def information(self, ctx: Context):
