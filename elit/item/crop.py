@@ -1,5 +1,11 @@
+from typing import Tuple, Optional
+
+from discord import Embed
+from discord.ext.commands import Bot, Context
+
 from elit.farm import get_prise
 from elit.item import Item
+from util import eul_reul, const, eun_neun
 
 
 class Crop(Item):
@@ -15,6 +21,11 @@ class Crop(Item):
 
     def __str__(self):
         return f'`{self.item_data.id}`: 작물-{self.name}'
+
+    async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
+        self.amount += 1
+        return f'엥...? `{self.name}`{eul_reul(self.name)} 사용하고 다시 얻었다! ' \
+               f'`{self.name}`{eun_neun(self.name)} <#{const("text_channel.shop")}>에서 판매하자!', None
 
     def get_prise_per_piece(self) -> int:
         return get_prise(self.name)
