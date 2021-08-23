@@ -53,6 +53,7 @@ class FarmCommand(Cog):
         embed.add_field(name='채널', value=farm.get_channel(self.bot).mention)
         embed.add_field(name='소유자', value=owner.display_name)
         embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)')
+        embed.add_field(name='공동계좌', value=f'__{farm.money}{const("currency.default")}__')
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}: {", ".join(members)}', inline=False)
         if crop_names:
             embed.add_field(name='심은 작물', value=', '.join(crop_names), inline=False)
@@ -179,6 +180,58 @@ class FarmCommand(Cog):
             return
 
         await invitee.join(farm, self.bot)
+
+    @farm.command(name='입금', aliases=['credit'],
+                  description='밭 공동계좌에 돈을 입금합니다.')
+    async def credit(self, ctx: Context, amount: int):
+        if message := check_farm(ctx, self.bot):
+            await ctx.send(message)
+            return
+
+        player = get_player(ctx.author.id)
+
+        currency = const('currency.default')
+        if player.money < amount:
+            await ctx.send(f':moneybag: **충분히 돈을 가지고 있지 않아요!** __{amount}{currency}__{eul_reul(currency)} '
+                           f'입금하기 위해서는 __{amount - player.money}{currency}__{i_ga(currency)} 더 필요해요!')
+            return
+        player.set_money(player.money - amount)
+
+        farm = player.get_farm()
+        previous_money = farm.money
+        farm.set_money(farm.money + amount)
+
+        await ctx.send(f':moneybag: {farm.get_channel(self.bot).mention}에 돈을 __{amount}{currency}__ 입금했습니다!\n'
+                       f'> **이전 계좌 금액** __{previous_money}{currency}__\n'
+                       f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
+                       f'> **입금한 금액** __{amount}{currency}__')
+
+    @farm.command(name='출금', aliases=['인출', 'withdraw'],
+                  description='밭 공동계좌에서 돈을 인출합니다.')
+    async def withdraw(self, ctx: Context, amount: int):
+        if message := check_farm(ctx, self.bot):
+            await ctx.send(message)
+            return
+
+        player = get_player(ctx.author.id)
+        farm = player.get_farm()
+
+        currency = const('currency.default')
+        if farm.money < amount:
+            await ctx.send(f':moneybag: **계좌에 돈이 부족해요!** 계좌에 __{farm.money}{currency}__만큼이 있어요. '
+                           f'__{amount}{currency}__{eul_reul(currency)} 인출하기에는 '
+                           f'__{amount - farm.money}{currency}__{i_ga(currency)} 부족해요.')
+            return
+
+        previous_money = farm.money
+        farm.set_money(farm.money - amount)
+        player.set_money(player.money + amount)
+
+        await ctx.send(f':moneybag: {farm.get_channel(self.bot).mention}의 공동계좌에서 돈을 '
+                       f'__{amount}{currency}__ 인출했습니다!\n'
+                       f'> **이전 계좌 금액** __{previous_money}{currency}__\n'
+                       f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
+                       f'> **인출한 금액** __{amount}{currency}__')
 
     @command(name='작물', aliases=['crop'],
              description='밭에 심어진 작물 정보를 확인합니다.')

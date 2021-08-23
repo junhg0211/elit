@@ -259,6 +259,15 @@ class Farm:
         await farm_channel.send(':people_wrestling: 밭에 사람이 아무도 없는 것이 확인되어 카테고리를 이동했습니다! '
                                 '만약 이 밭의 구성원이 이 메시지를 보고 있다면 관리자를 호출해주세요. 밭을 복구해줄게요.')
 
+    def set_money(self, money: int) -> 'Farm':
+        self.money = money
+        if self.money < 0:
+            raise ValueError('밭 계좌에는 0원 미만으로 가지고 있을 수 없습니다.')
+
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE farm SET money = %s WHERE farm_id = %s', (self.money, self.id))
+        return self
+
 
 def new_farm(farm_id: int, owner_id: int, channel_id: int) -> Farm:
     with database.cursor(DictCursor) as cursor:
