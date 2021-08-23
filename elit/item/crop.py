@@ -1,3 +1,4 @@
+from elit.farm import get_prise
 from elit.item import Item
 
 
@@ -14,6 +15,9 @@ class Crop(Item):
 
     def __str__(self):
         return f'`{self.item_data.id}`: 작물-{self.name}'
+
+    def get_prise_per_piece(self) -> int:
+        return get_prise(self.name)
 
     def set_name(self, name: str) -> 'Crop':
         self.name = name
