@@ -222,10 +222,9 @@ class FarmCommand(Cog):
 
         player = get_player(ctx.author.id)
         farm = player.get_farm()
-        crop = farm.get_planted_crop_by_name(crop_name)
 
         try:
-            farm.harvest(crop.name)
+            crop = farm.pull(crop_name)
         except ValueError:
             await ctx.send(f':potted_plant: **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
                            f'수확하려고 하는 작물의 이름이 `{crop_name}`이 맞는지 다시 한 번 확인해주세요.')
@@ -237,6 +236,20 @@ class FarmCommand(Cog):
         crop_item.set_quality(crop.get_quality())
 
         await ctx.send(f':potted_plant: __{crop.name}__{eul_reul(crop.name)} __{amount}개__ 수확했습니다!')
+
+    @command(name='뽑아내기', aliases=['pull', '뽑기'],
+             description='밭에 심어져있는 작물을 뽑아냅니다. 뽑아낸 작물은 아이템을 드랍하지 않습니다.')
+    async def pull(self, ctx: Context, *, crop_name: str):
+        player = get_player(ctx.author.id)
+        farm = player.get_farm()
+        try:
+            farm.pull(crop_name)
+        except ValueError:
+            await ctx.send(f':potted_plant: **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
+                           f'뽑으려고 하는 작물의 이름이 `{crop_name}`이 맞는지 다시 한 번 확인해주세요.')
+            return
+
+        await ctx.send(f':eggplant: __{crop_name}__{eul_reul(crop_name)} 뽑아냈습니다.')
 
 
 def setup(bot: Bot):

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from hashlib import md5
 from math import exp
 from random import seed, random
-from typing import Tuple
+from typing import Tuple, Optional
 
 from discord import TextChannel, User, Embed
 from discord.ext.commands import Bot
@@ -210,7 +210,7 @@ class Farm:
             result += crops.amount
         return result
 
-    def get_planted_crop_by_name(self, name: str) -> Crop:
+    def get_planted_crop_by_name(self, name: str) -> Optional[Crop]:
         with database.cursor(DictCursor) as cursor:
             cursor.execute('SELECT * FROM farm_crop WHERE farm_id = %s AND crop_name = %s', (self.id, name))
             data = cursor.fetchall()
@@ -234,14 +234,14 @@ class Farm:
                                (self.id, name, amount, planted_at := datetime.now()))
             return amount, planted_at
 
-    def harvest(self, crop_name: str) -> 'Farm':
+    def pull(self, crop_name: str) -> Crop:
         crop = self.get_planted_crop_by_name(crop_name)
         if crop is None:
             raise ValueError(f'밭에 {crop_name}{i_ga(crop_name)} 심어져있지 않습니다.')
 
         with database.cursor() as cursor:
             cursor.execute('DELETE FROM farm_crop WHERE crop_name = %s AND farm_id = %s', (crop_name, self.id))
-        return self
+        return crop
 
     def member_count(self) -> int:
         with database.cursor() as cursor:
