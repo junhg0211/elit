@@ -12,7 +12,7 @@ class InventoryCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @group(name='인벤토리', aliases=['인벤', 'inventory'], description='자신의 인벤토리를 확인합니다.',
+    @group(name='인벤토리', aliases=['인벤', 'inventory', 'inv'], description='자신의 인벤토리를 확인합니다.',
            invoke_without_command=True)
     async def inventory(self, ctx: Context):
         player = get_player(ctx.author.id)
