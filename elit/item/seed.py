@@ -15,8 +15,6 @@ class Seed(Item):
     description = '밭에 농작물을 심을 수 있습니다.'
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Embed]:
-        self.check_amount(amount)
-
         farm = player.get_farm()
         farm_channel = farm.get_channel(bot)
 

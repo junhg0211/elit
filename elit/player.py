@@ -119,9 +119,18 @@ class Player:
 
         self.farm_id = data['farm_id']
         self.money = data['money']
+        self.recommender_id = data['recommender_id']
 
     async def use(self, item: Item, amount: int, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
+        item.check_amount(amount)
         return await item.use(amount, self, bot, ctx)
+
+    def set_recommender(self, recommender_id: int) -> 'Player':
+        self.recommender_id = recommender_id
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE player SET recommender_id = %s WHERE discord_id = %s',
+                           (self.recommender_id, self.discord_id))
+        return self
 
     def get_inventory(self) -> PlayerInventory:
         return PlayerInventory(self.discord_id)

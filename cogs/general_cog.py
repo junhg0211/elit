@@ -1,11 +1,14 @@
 import traceback
+from asyncio import wait
 from datetime import datetime
 
-from discord import Embed
+from discord import Embed, User
 from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand, CommandError, \
     MissingRequiredArgument, CommandNotFound, BadArgument
 
-from elit import Player, new_player, Farm
+from elit import Player, new_player, Farm, get_player
+from elit.exception import InventoryCapacityError
+from elit.item import RecommendationCertificate
 from util import const, eun_neun
 
 
@@ -46,6 +49,10 @@ class General(Cog):
                   f'\t메시지 내용: {repr(ctx.message.content)}')
             traceback.print_exception(error.__class__, error, error.__traceback__)
 
+    @command(name='핑', aliases=['ping'], description='핑퐁! 핑(지연 시간)을 확인합니다.')
+    async def ping(self, ctx: Context):
+        await ctx.send(f':ping_pong: 핑퐁! (핑: {self.bot.latency * 1000:.3f}ms)')
+
     @command(name='정보', aliases=['info', 'information'], description='플레이어 정보를 확인합니다.')
     async def information(self, ctx: Context):
         try:
@@ -66,9 +73,46 @@ class General(Cog):
 
         await ctx.send(embed=embed)
 
-    @command(name='핑', aliases=['ping'], description='핑퐁! 핑(지연 시간)을 확인합니다.')
-    async def ping(self, ctx: Context):
-        await ctx.send(f':ping_pong: 핑퐁! (핑: {self.bot.latency * 1000:.3f}ms)')
+    @command(name='추천인', aliases=['recommender'],
+             description='추천인을 입력합니다.')
+    async def recommender(self, ctx: Context, user: User):
+        if ctx.author == user:
+            await ctx.send(f':love_letter: {ctx.author.mention} **자기 자신을 추천인으로 설정할 수 없어요!**')
+            return
+
+        player = get_player(ctx.author.id)
+
+        if player.recommender_id:
+            user = self.bot.get_user(player.recommender_id)
+            if user is None:
+                await ctx.send(f':love_letter: **{ctx.author.mention}님은 이미 추천인이 있어요!** '
+                               f'추천인은 한 명만 설정할 수 있어요.')
+            else:
+                await ctx.send(f':love_letter: **{ctx.author.mention}님은 '
+                               f'이미 __{user.display_name}__님을 추천인으로 설정했어요!** 추천인은 한 명만 설정할 수 있어요.')
+            return
+
+        recommender = get_player(user.id)
+
+        if recommender.recommender_id == ctx.author.id:
+            await ctx.send(':love_letter: **자기 자신을 추천인으로 설정한 사람을 추천할 수 없어요!** *대박! 순환참조! '
+                           '과연 누가 누구에게 추천했을까요?*')
+            return
+
+        try:
+            recommender.get_inventory().earn_item(8)
+        except InventoryCapacityError:
+            await ctx.send(f':love_letter: {ctx.author.mention} **__{user.display_name}__님의 인벤토리가 가득 차 있어요!!** '
+                           f'__{user.display_name}__님이 인벤토리를 비우면 다시 한 번 시도해주세요.')
+            return
+        else:
+            player.set_recommender(user.id)
+
+        await wait((
+            ctx.send(f':love_letter: 추천인이 __{user.display_name}__님으로 설정되었어요!'),
+            user.send(f':love_letter: __{ctx.author.display_name}__님이 __{user.display_name}__님을 '
+                      f'추천인으로 설정했어요! `{RecommendationCertificate.name}` 1개를 얻었어요.')
+        ))
 
 
 def setup(bot: Bot):

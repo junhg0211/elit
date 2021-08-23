@@ -17,8 +17,13 @@ class Item:
 
         self.amount = self.get_amount()
 
+    def __str__(self):
+        return f'`{self.item_data.id}`: {self.name}'
+
+    def __repr__(self):
+        return f'{self} ({self.amount})'
+
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
-        self.check_amount(amount)
         return self.apply_use(amount, f'`{self.name}`{eul_reul(self.name)} {amount}개 사용했다!'), None
 
     def get_fields(self) -> filter:
@@ -57,16 +62,12 @@ class Item:
 
     def check_amount(self, amount: int):
         """
+        이 아이템을 `amount` 개 사용할 수 있는지 확인하고, 사용할 수 없다면 오류를 발생합니다.
+
         :exception ValueError: `amount`가 사용 가능 개수보다 많음
         """
         if self.amount < amount:
             raise ValueError(f':x: **{self.name}{eun_neun(self.name)} {self.amount}개까지 사용할 수 있습니다.**')
-
-    def __str__(self):
-        return f'`{self.item_data.id}`: {self.name}'
-
-    def __repr__(self):
-        return f'{self} ({self.amount})'
 
 
 class Item1(Item):

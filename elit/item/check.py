@@ -14,7 +14,6 @@ class Check10(Item):
                   f'사용하면 10{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
-        self.check_amount(amount)
         currency = const("currency.default")
         player.earn_money(10 * amount)
         return self.apply_use(amount, f'__{self.name}__{eul_reul(self.name)} __{amount}번__ 사용해서 '
@@ -28,7 +27,6 @@ class Check100(Item):
                   f'사용하면 100{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
-        self.check_amount(amount)
         currency = const("currency.default")
         player.earn_money(100 * amount)
         return self.apply_use(amount, f'__{self.name}__{eul_reul(self.name)} __{amount}번__ 사용해서 '
@@ -42,7 +40,6 @@ class Check1000(Item):
                   f'사용하면 1000{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
-        self.check_amount(amount)
         currency = const("currency.default")
         player.earn_money(1000 * amount)
         return self.apply_use(amount, f'__{self.name}__{eul_reul(self.name)} __{amount}번__ 사용해서 '
@@ -56,7 +53,6 @@ class Check10000(Item):
                   f'사용하면 10000{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
-        self.check_amount(amount)
         currency = const("currency.default")
         player.earn_money(10000 * amount)
         return self.apply_use(amount, f'__{self.name}__{eul_reul(self.name)} __{amount}번__ 사용해서 '
