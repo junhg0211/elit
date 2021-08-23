@@ -120,7 +120,7 @@ class Player:
         self.farm_id = data['farm_id']
         self.money = data['money']
 
-    async def use(self, item: Item, amount: int, bot: Bot, ctx: Context) -> Tuple[str, Embed]:
+    async def use(self, item: Item, amount: int, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         return await item.use(amount, self, bot, ctx)
 
     def get_inventory(self) -> PlayerInventory:
