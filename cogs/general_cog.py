@@ -94,8 +94,8 @@ class General(Cog):
         recommender = get_player(user.id)
 
         if recommender.recommender_id == ctx.author.id:
-            await ctx.send(':love_letter: **자기 자신을 추천인으로 설정한 사람을 추천할 수 없어요!** *대박! 순환참조! '
-                           '과연 누가 누구에게 추천했을까요?*')
+            await ctx.send(f':love_letter: {ctx.author.mention} '
+                           f'**자기 자신을 추천인으로 설정한 사람을 추천할 수 없어요!** *대박! 순환참조! 과연 누가 누구에게 추천했을까요?*')
             return
 
         try:

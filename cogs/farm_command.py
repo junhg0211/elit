@@ -38,7 +38,7 @@ class FarmCommand(Cog):
         try:
             farm = Farm(player.farm_id)
         except ValueError:
-            await ctx.send(':park: **시스템 상 예상치 못한 오류가 발생했습니다.** '
+            await ctx.send(f':park: {ctx.author.mention} **시스템 상 예상치 못한 오류가 발생했습니다.** '
                            '이 문제를 해결하기 위해서는 전문가가 있어야 합니다. 관리자에게 보고해주세요.')
             return
 
@@ -136,21 +136,22 @@ class FarmCommand(Cog):
         try:
             invitee = get_player(user.id)
         except ValueError:
-            await ctx.send(f':people_wrestling: **__{user.display_name}__님의 정보를 확인할 수 없어요!** '
+            await ctx.send(f':people_wrestling: {ctx.author.mention} **__{user.display_name}__님의 정보를 확인할 수 없어요!** '
                            f'__{user.display_name}__님이 플레이어 정보를 생성하지 않아서 그래요. '
                            f'*`엘 돈`을 통해 플레이어 정보를 생성한 후에 다시 시도*해주세요.')
             return
 
         invitee_user = invitee.get_user(self.bot)
         if invitee.is_in_farm():
-            await ctx.send(f':people_wrestling: **__{invitee_user.display_name}__님은 이미 가입한 밭이 있습니다!** '
+            await ctx.send(f':people_wrestling: {ctx.author.mention} '
+                           f'**__{invitee_user.display_name}__님은 이미 가입한 밭이 있습니다!** '
                            f'밭을 탈퇴하기 위해서는 __{invitee_user.display_name}__님이 직접 `엘 밭 나가기` 명령어를 사용해주세요.')
             return
 
         farm = player.get_farm()
 
         if farm.member_count() >= farm.capacity:
-            await ctx.send(':people_wrestling: **밭 구성원이 가득 찼습니다!** '
+            await ctx.send(f':people_wrestling: {ctx.author.mention} **밭 구성원이 가득 찼습니다!** '
                            '밭에 있는 사람을 내쫒거나, 상점에서 밭 최대 인원 주문서를 구매해서 사용해주세요.')
             return
 
@@ -191,7 +192,8 @@ class FarmCommand(Cog):
 
         currency = const('currency.default')
         if player.money < amount:
-            await ctx.send(f':moneybag: **충분히 돈을 가지고 있지 않아요!** __{amount}{currency}__{eul_reul(currency)} '
+            await ctx.send(f':moneybag: {ctx.author.mention} '
+                           f'**충분히 돈을 가지고 있지 않아요!** __{amount}{currency}__{eul_reul(currency)} '
                            f'입금하기 위해서는 __{amount - player.money}{currency}__{i_ga(currency)} 더 필요해요!')
             return
         player.set_money(player.money - amount)
@@ -216,7 +218,8 @@ class FarmCommand(Cog):
 
         currency = const('currency.default')
         if farm.money < amount:
-            await ctx.send(f':moneybag: **계좌에 돈이 부족해요!** 계좌에 __{farm.money}{currency}__만큼이 있어요. '
+            await ctx.send(f':moneybag: {ctx.author.mention} '
+                           f'**계좌에 돈이 부족해요!** 계좌에 __{farm.money}{currency}__만큼이 있어요. '
                            f'__{amount}{currency}__{eul_reul(currency)} 인출하기에는 '
                            f'__{amount - farm.money}{currency}__{i_ga(currency)} 부족해요.')
             return
@@ -243,7 +246,7 @@ class FarmCommand(Cog):
             crop = farm.get_planted_crop_by_name(crop_name)
 
             if crop is None:
-                await ctx.send(f':potted_plant: **작물 정보를 확인할 수 없어요!** '
+                await ctx.send(f':potted_plant: {ctx.author.mention} **작물 정보를 확인할 수 없어요!** '
                                f'`{crop_name}`이라고 입력됐어요. 혹시 밭에 심어져있지 않은 작물은 아닌지 확인해주세요.')
                 return
 
@@ -296,7 +299,7 @@ class FarmCommand(Cog):
         try:
             crop = farm.pull(crop_name)
         except ValueError:
-            await ctx.send(f':potted_plant: **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
+            await ctx.send(f':potted_plant: {ctx.author.mention} **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
                            f'수확하려고 하는 작물의 이름이 `{crop_name}`이 맞는지 다시 한 번 확인해주세요.')
             return
 
@@ -315,7 +318,8 @@ class FarmCommand(Cog):
         try:
             farm.pull(crop_name)
         except ValueError:
-            await ctx.send(f':potted_plant: **밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
+            await ctx.send(f':potted_plant: {ctx.author.mention} '
+                           f'**밭에 __{crop_name}__{i_ga(crop_name)} 심어져있지 않아요!** '
                            f'뽑으려고 하는 작물의 이름이 `{crop_name}`이 맞는지 다시 한 번 확인해주세요.')
             return
 

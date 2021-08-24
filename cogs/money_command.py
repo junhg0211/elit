@@ -22,7 +22,7 @@ class MoneyCommand(Cog):
         emoji = ':money_with_wings:'
 
         if ctx.author == user:
-            await ctx.send(f'{emoji} **자기 자신에게는 송금할 수 없습니다!!**')
+            await ctx.send(f'{emoji} {ctx.author.mention} **자기 자신에게는 송금할 수 없습니다!!**')
             return
 
         currency = const('currency.default')
