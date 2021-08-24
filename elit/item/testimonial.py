@@ -15,5 +15,5 @@ class Testimonial(Item):
         self.amount += 1
         return '서버 추천인을 입력하거나 출석을 하면 상장을 받을 수 있다! **상장은 `엘 교환상점`에서 좋은 아이템으로 교환할 수 있다.**', None
 
-    async def get_prise_per_piece(self) -> int:
+    def get_prise_per_piece(self) -> int:
         return 100
