@@ -233,8 +233,9 @@ class FarmCommand(Cog):
                        f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
                        f'> **인출한 금액** __{amount}{currency}__')
 
-    @command(name='작물', aliases=['crop'],
-             description='밭에 심어진 작물 정보를 확인합니다.')
+    @group(name='작물', aliases=['crop'],
+           description='밭에 심어진 작물 정보를 확인합니다.',
+           invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -257,14 +258,36 @@ class FarmCommand(Cog):
             not_crop = True
             embed = Embed(title='밭에 심어져 있는 작물', description=farm_channel.mention, color=const('color.farm'))
             for crop in farm.get_crops():
-                name, value = crop.get_line()
+                name, value = crop.get_simple_line()
                 embed.add_field(name=name, value=value, inline=False)
                 not_crop = False
             if not_crop:
                 embed.add_field(name='(없음)', value='(없음)')
             embed.set_thumbnail(url=farm.get_owner(self.bot).avatar_url)
-            embed.set_footer(text='`엘 작물 <작물 이름>`을 통해서 작물에 대한 상세 정보를 확인할 수 있습니다.')
+            embed.set_footer(text='`엘 작물 자세히`를 통해서 밭에 심어진 작물들에 대한 상세 정보를 확인할 수 있습니다.')
             await ctx.send(embed=embed)
+
+    @crop.command(name='자세히', aliases=['specific'],
+                  description='작물 정보를 자세히 표시합니다.')
+    async def specific(self, ctx: Context):
+        if message := check_farm(ctx, self.bot):
+            await ctx.send(message)
+            return
+
+        farm = get_player(ctx.author.id).get_farm()
+        farm_channel = farm.get_channel(self.bot)
+
+        not_crop = True
+        embed = Embed(title='밭 작물 자세히 보기', description=farm_channel.mention, color=const('color.farm'))
+        for crop in farm.get_crops():
+            name, value = crop.get_line()
+            embed.add_field(name=name, value=value, inline=False)
+            not_crop = False
+        if not_crop:
+            embed.add_field(name='(없음)', value='(없음)')
+        embed.set_thumbnail(url=farm.get_owner(self.bot).avatar_url)
+        embed.set_footer(text='`엘 작물 <작물 이름>`을 통해서 작물에 대한 상세 정보를 확인할 수 있습니다.')
+        await ctx.send(embed=embed)
 
     @command(name='수확', aliases=['추수', 'harvest'],
              description='밭에 있는 작물을 수확합니다.')

@@ -6,7 +6,7 @@ from discord.ext.commands import Bot, Context
 
 from elit.exception import ChannelError
 from elit.item import Item
-from util import message_author_check
+from util import message_author_check, irago
 
 
 class Seed(Item):
@@ -32,6 +32,8 @@ class Seed(Item):
         else:
             if message.content in ('취소', 'cancel'):
                 raise ValueError(':x: **심기를 취소했습니다.**')
+            elif message.content in ('자세히', 'specific'):
+                raise ValueError(f':x: **작물 이름은 __{message.content}__{irago(message.content)} 지을 수 없습니다.**')
             crop_name = message.content
 
         if len(crop_name) > 16:

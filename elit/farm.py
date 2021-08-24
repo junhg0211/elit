@@ -137,6 +137,16 @@ class Crop:
         else:
             return ':arrow_down:'
 
+    def get_simple_line(self) -> Tuple[str, str]:
+        if datetime.now() < (good_from := self.planted_at + self.get_duration()):
+            value = f'{good_from}부터'
+        else:
+            value = f'{good_from + self.get_grade_duration()}까지'
+        name = f'__{self.name}__({get_grade_name(self.get_grade())}) ⨉ {self.amount} ' \
+               f'({self.get_quality() * 100:.2f}% {self.quality_derivative_emoji()},' \
+               f' {self.get_prise()} / {self.get_maximum_prise()})'
+        return name, value
+
     def get_line(self) -> Tuple[str, str]:
         now = datetime.now()
         if now < (good_from := self.planted_at + self.get_duration()):
@@ -166,6 +176,7 @@ class Crop:
                         value=f'심은 시각부터 {self.get_duration()}:\n'
                               f'{self.planted_at + self.get_duration()}부터\n'
                               f'{self.planted_at + self.get_duration() + self.get_grade_duration()}까지', inline=False)
+        embed.set_footer(text='`엘 작물`을 통해서 밭에 심어져있는 작물 목록을 한 번에 확인할 수 있습니다.')
         return embed
 
 
