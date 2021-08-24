@@ -12,7 +12,7 @@ class InventoryCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @group(name='인벤토리', aliases=['인벤', 'inventory', 'inv'], description='자신의 인벤토리를 확인합니다.',
+    @group(name='인벤토리', aliases=['인벤', 'inventory', 'inv'], help='자신의 인벤토리를 확인합니다.',
            invoke_without_command=True)
     async def inventory(self, ctx: Context):
         player = get_player(ctx.author.id)
@@ -27,7 +27,7 @@ class InventoryCommand(Cog):
         embed.set_footer(text='`엘 아이템 <아이템 ID>`를 통해서 아이템에 대한 상세 정보를 확인할 수 있습니다.')
         await ctx.send(embed=embed)
 
-    @command(name='타입', aliases=['type'], description='아이템 타입 목록을 확인합니다.')
+    @command(name='타입', aliases=['type'], help='아이템 타입 목록을 확인합니다.')
     async def type(self, ctx: Context, type_number: int = -1):
         if type_number == -1:
             embed = Embed(title='사용 가능한 아이템 타입 목록', color=const('color.elit'))
@@ -45,7 +45,7 @@ class InventoryCommand(Cog):
                 embed.add_field(name='데이터 키', value=fields)
         await ctx.send(embed=embed)
 
-    @command(name='사용', aliases=['use'], description='아이템을 사용합니다.')
+    @command(name='사용', aliases=['use'], help='아이템을 사용합니다.')
     async def use(self, ctx: Context, item_id: int, count: Union[int, str] = 1):
         player = get_player(ctx.author.id)
         inventory = player.get_inventory()
@@ -71,7 +71,7 @@ class InventoryCommand(Cog):
             embed = None
         await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}', embed=embed)
 
-    @command(name='아이템', aliases=['item'], description='아이템 정보를 확인합니다.')
+    @command(name='아이템', aliases=['item'], help='아이템 정보를 확인합니다.')
     async def item(self, ctx: Context, item_id: int = -1):
         if item_id == -1:
             await ctx.send(f':squeeze_bottle: {ctx.author.mention} **인벤토리를 확인하는 커맨드는 `엘 인벤토리`입니다!** '
@@ -103,7 +103,7 @@ class InventoryCommand(Cog):
         await ctx.send(embed=embed)
 
     @has_role(const('role.enifia'))
-    @command(name='주기', aliases=['give'], description='아이템을 줍니다.', hidden=True)
+    @command(name='주기', aliases=['give'], help='아이템을 줍니다.', hidden=True)
     async def give(self, ctx: Context, user: User, item_type: int, amount: int = 1):
         if not get_item_name_by_type(item_type):
             await ctx.send(f':baggage_claim: {ctx.author.mention} **아이템 정보를 확인할 수 없습니다!** '

@@ -16,7 +16,7 @@ def check_farm(ctx: Context, bot: Bot):
 
 
 async def send_menu(ctx: Context, menu_name: str, *item_types: int):
-    embed = Embed(title='상점', description=menu_name, color=const('color.elit'))
+    embed = Embed(title='상점', help=menu_name, color=const('color.elit'))
     currency = const('currency.default')
     for item_type in item_types:
         item_class = get_item_class_by_type(item_type)
@@ -29,7 +29,7 @@ class Shop(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @command(name='상점', aliases=['shop'], description='상점으로 이동합니다.')
+    @command(name='상점', aliases=['shop'], help='상점으로 이동합니다.')
     async def shop(self, ctx: Context):
         shop_channel = self.bot.get_channel(const('text_channel.shop'))
 
@@ -39,7 +39,7 @@ class Shop(Cog):
         else:
             await ctx.send(f':shopping_cart: {shop_channel.mention}에 가려면 이곳을 눌러주세요: {shop_channel.mention}')
 
-    @command(name='판매', aliases=['sell'], description='아이템을 판매합니다.')
+    @command(name='판매', aliases=['sell'], help='아이템을 판매합니다.')
     async def sell(self, ctx: Context, item_id: int, amount: Union[int, str] = 1):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -73,8 +73,7 @@ class Shop(Cog):
         await ctx.send(f':coin: __{item.name}__{eul_reul(item.name)} 팔고 __{prise}{currency}__{eul_reul(currency)} '
                        f'얻었습니다!')
 
-    @command(name='구매', aliases=['buy'],
-             description='아이템을 구매합니다.')
+    @command(name='구매', aliases=['buy'], help='아이템을 구매합니다.')
     async def buy(self, ctx: Context, item_type: int, amount: int = 1):
         player = get_player(ctx.author.id)
         item_class = get_item_class_by_type(item_type)
@@ -102,22 +101,18 @@ class Shop(Cog):
         await ctx.send(f':shopping_cart: __{buy_prise}{currency}__{eul_reul(currency)} 주고 '
                        f'__{item.name}__{eul_reul(item.name)} __{amount} 개__ 구매했습니다!')
 
-    @group(name='메뉴', aliases=['menu', '구매목록'],
-           description='구매 가능한 아이템 목록을 확인합니다.',
-           invoke_without_command=True)
+    @group(name='메뉴', aliases=['menu', '구매목록'], help='구매 가능한 아이템 목록을 확인합니다.', invoke_without_command=True)
     async def menu(self, ctx: Context):
         await ctx.send(f':shopping_cart: {ctx.author.mention} **구매 가능 아이템 목록을 확인해보세요!** '
                        f'구매할 수 있는 아이템의 타입은 `엘 메뉴 일반`, `엘 메뉴 농사` 등 서브커맨드를 통해 알아볼 수 있습니다. '
                        f'서브커맨드의 목록을 확인하려면 `엘 도움말 메뉴`를 입력해주세요!')
         return
 
-    @menu.command(name='일반', aliases=['general', '기타'],
-                  description='기타 아이템 목록을 확인합니다.')
+    @menu.command(name='일반', aliases=['general', '기타'], help='기타 아이템 목록을 확인합니다.')
     async def general(self, ctx: Context):
         await send_menu(ctx, '일반', 2, 5, 6, 7)
 
-    @menu.command(name='농사', aliases=['farming'],
-                  description='농사 아이템 목록을 확인합니다.')
+    @menu.command(name='농사', aliases=['farming'], help='농사 아이템 목록을 확인합니다.')
     async def farming(self, ctx: Context):
         await send_menu(ctx, '농사', 3)
 

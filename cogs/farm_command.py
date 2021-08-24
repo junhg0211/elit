@@ -25,7 +25,7 @@ class FarmCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @group(name='밭', aliases=['farm'], description='자신의 밭 정보를 확인합니다.', invoke_without_command=True)
+    @group(name='밭', aliases=['farm'], help='자신의 밭 정보를 확인합니다.', invoke_without_command=True)
     async def farm(self, ctx: Context):
         player = get_player(ctx.author.id)
 
@@ -61,7 +61,7 @@ class FarmCommand(Cog):
         embed.set_footer(text='`엘 작물`을 통해서 밭에 심어져 있는 작물들에 대한 정보를 확인할 수 있습니다.')
         await ctx.send(embed=embed)
 
-    @farm.command(name='생성', aliases=['create'], description='새로운 밭을 생성합니다.')
+    @farm.command(name='생성', aliases=['create'], help='새로운 밭을 생성합니다.')
     async def create(self, ctx: Context):
         player = get_player(ctx.author.id)
 
@@ -93,7 +93,7 @@ class FarmCommand(Cog):
 
         await ctx.send(f':park: {farm_channel.mention}{eul_reul(farm_channel.name)} 만들었습니다!')
 
-    @farm.command(name='나가기', aliases=['leave'], description='밭에서 나갑니다.')
+    @farm.command(name='나가기', aliases=['leave'], help='밭에서 나갑니다.')
     async def leave(self, ctx: Context):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -126,7 +126,7 @@ class FarmCommand(Cog):
 
         await player.leave_farm(self.bot)
 
-    @farm.command(name='초대', aliases=['invite'], description='밭에 구성원을 초대합니다.')
+    @farm.command(name='초대', aliases=['invite'], help='밭에 구성원을 초대합니다.')
     async def invite(self, ctx: Context, user: User):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -181,8 +181,7 @@ class FarmCommand(Cog):
 
         await invitee.join(farm, self.bot)
 
-    @farm.command(name='입금', aliases=['credit'],
-                  description='밭 공동계좌에 돈을 입금합니다.')
+    @farm.command(name='입금', aliases=['credit'], help='밭 공동계좌에 돈을 입금합니다.')
     async def credit(self, ctx: Context, amount: int):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -206,8 +205,7 @@ class FarmCommand(Cog):
                        f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
                        f'> **입금한 금액** __{amount}{currency}__')
 
-    @farm.command(name='출금', aliases=['인출', 'withdraw'],
-                  description='밭 공동계좌에서 돈을 인출합니다.')
+    @farm.command(name='출금', aliases=['인출', 'withdraw'], help='밭 공동계좌에서 돈을 인출합니다.')
     async def withdraw(self, ctx: Context, amount: int):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -233,9 +231,7 @@ class FarmCommand(Cog):
                        f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
                        f'> **인출한 금액** __{amount}{currency}__')
 
-    @group(name='작물', aliases=['crop'],
-           description='밭에 심어진 작물 정보를 확인합니다.',
-           invoke_without_command=True)
+    @group(name='작물', aliases=['crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -267,8 +263,7 @@ class FarmCommand(Cog):
             embed.set_footer(text='`엘 작물 자세히`를 통해서 밭에 심어진 작물들에 대한 상세 정보를 확인할 수 있습니다.')
             await ctx.send(embed=embed)
 
-    @crop.command(name='자세히', aliases=['specific'],
-                  description='작물 정보를 자세히 표시합니다.')
+    @crop.command(name='자세히', aliases=['specific'], help='작물 정보를 자세히 표시합니다.')
     async def specific(self, ctx: Context):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -289,8 +284,7 @@ class FarmCommand(Cog):
         embed.set_footer(text='`엘 작물 <작물 이름>`을 통해서 작물에 대한 상세 정보를 확인할 수 있습니다.')
         await ctx.send(embed=embed)
 
-    @command(name='수확', aliases=['추수', 'harvest'],
-             description='밭에 있는 작물을 수확합니다.')
+    @command(name='수확', aliases=['추수', 'harvest'], help='밭에 있는 작물을 수확합니다.')
     async def harvest(self, ctx: Context, *, crop_name: str):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
@@ -314,7 +308,7 @@ class FarmCommand(Cog):
         await ctx.send(f':potted_plant: __{crop.name}__{eul_reul(crop.name)} __{amount}개__ 수확했습니다!')
 
     @command(name='뽑아내기', aliases=['pull', '뽑기'],
-             description='밭에 심어져있는 작물을 뽑아냅니다. 뽑아낸 작물은 아이템을 드랍하지 않습니다.')
+             help='밭에 심어져있는 작물을 뽑아냅니다. 뽑아낸 작물은 아이템을 드랍하지 않습니다.')
     async def pull(self, ctx: Context, *, crop_name: str):
         player = get_player(ctx.author.id)
         farm = player.get_farm()

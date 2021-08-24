@@ -9,7 +9,7 @@ from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand,
 from elit import Player, new_player, Farm, get_player
 from elit.exception import InventoryCapacityError
 from elit.item import RecommendationCertificate
-from util import const, eun_neun
+from util import const
 
 
 class General(Cog):
@@ -49,11 +49,11 @@ class General(Cog):
                   f'\t메시지 내용: {repr(ctx.message.content)}')
             traceback.print_exception(error.__class__, error, error.__traceback__)
 
-    @command(name='핑', aliases=['ping'], description='핑퐁! 핑(지연 시간)을 확인합니다.')
+    @command(name='핑', aliases=['ping'], help='핑퐁! 핑(지연 시간)을 확인합니다.')
     async def ping(self, ctx: Context):
         await ctx.send(f':ping_pong: 핑퐁! (핑: {self.bot.latency * 1000:.3f}ms)')
 
-    @command(name='정보', aliases=['info', 'information'], description='플레이어 정보를 확인합니다.')
+    @command(name='정보', aliases=['info', 'information'], help='플레이어 정보를 확인합니다.')
     async def information(self, ctx: Context):
         try:
             player = Player(ctx.author.id)
@@ -73,8 +73,7 @@ class General(Cog):
 
         await ctx.send(embed=embed)
 
-    @command(name='추천인', aliases=['recommender'],
-             description='추천인을 입력합니다.')
+    @command(name='추천인', aliases=['recommender'], help='추천인을 입력합니다.')
     async def recommender(self, ctx: Context, user: User):
         if ctx.author == user:
             await ctx.send(f':love_letter: {ctx.author.mention} **자기 자신을 추천인으로 설정할 수 없어요!**')
