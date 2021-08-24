@@ -72,7 +72,12 @@ class InventoryCommand(Cog):
         await ctx.send(f':roll_of_paper: {ctx.author.display_name}: {log}', embed=embed)
 
     @command(name='아이템', aliases=['item'], description='아이템 정보를 확인합니다.')
-    async def item(self, ctx: Context, item_id: int):
+    async def item(self, ctx: Context, item_id: int = -1):
+        if item_id == -1:
+            await ctx.send(f':squeeze_bottle: {ctx.author.mention} **인벤토리를 확인하는 커맨드는 `엘 인벤토리`입니다!** '
+                           f'`엘 아이템` 명령어의 사용법은 `엘 도움말 아이템`에서 확인해보세요.')
+            return
+
         player_inventory = get_player(ctx.author.id).get_inventory()
 
         if not player_inventory.has_item(item_id):
