@@ -13,6 +13,7 @@ class Seed(Item):
     name = '씨앗'
     type = 3
     description = '밭에 농작물을 심을 수 있습니다.'
+    buy_prise = 2
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Embed]:
         farm = player.get_farm()

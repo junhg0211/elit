@@ -1,3 +1,4 @@
+from math import inf
 from typing import Tuple, Optional, Callable
 
 from discord import Embed
@@ -11,6 +12,7 @@ class Item:
     type = 0
     name = '아무것도 아님'
     description = '아무것도 아닙니다'
+    buy_prise = inf
 
     def __init__(self, item_id: int):
         self.item_data = ItemData(item_id)

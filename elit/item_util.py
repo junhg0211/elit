@@ -1,9 +1,8 @@
 from math import inf
-from typing import Optional
+from typing import Optional, Type
 
 import elit.item
 from util import database
-
 
 duplication_prohibited = (elit.item.Crop.type,)
 
@@ -17,7 +16,11 @@ def get_item_classes():
                 yield item_class
 
 
-def get_item_class_by_type(item_type: int):
+def get_item_class_by_type(item_type: int) -> Optional[Type[elit.item.Item]]:
+    """
+    타입 번호가 ``item_type`` 인 아이템의 클래스를 출력합니다.
+    만약 결과에 해당되는 클래스가 없는 경우에는 ``None`` 을 반환합니다.
+    """
     for item_class in get_item_classes():
         if item_class.type == item_type:
             return item_class

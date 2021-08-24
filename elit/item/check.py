@@ -12,6 +12,10 @@ class Check10(Item):
     type = 2
     description = f'10원짜리 수표입니다. ' \
                   f'사용하면 10{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
+    buy_prise = 10
+
+    def get_prise_per_piece(self) -> int:
+        return 10
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         currency = const("currency.default")
@@ -25,6 +29,10 @@ class Check100(Item):
     type = 5
     description = f'100원짜리 수표입니다. ' \
                   f'사용하면 100{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
+    buy_prise = 100
+
+    def get_prise_per_piece(self) -> int:
+        return 100
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         currency = const("currency.default")
@@ -38,6 +46,10 @@ class Check1000(Item):
     type = 6
     description = f'1000원짜리 수표입니다. ' \
                   f'사용하면 1000{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
+    buy_prise = 1000
+
+    def get_prise_per_piece(self) -> int:
+        return 1000
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         currency = const("currency.default")
@@ -51,6 +63,10 @@ class Check10000(Item):
     type = 7
     description = f'10000원짜리 수표입니다. ' \
                   f'사용하면 10000{const("currency.default")}{eul_reul(const("currency.default"))} 받을 수 있습니다.'
+    buy_prise = 10000
+
+    def get_prise_per_piece(self) -> int:
+        return 10000
 
     async def use(self, amount: int, player, bot: Bot, ctx: Context) -> Tuple[str, Optional[Embed]]:
         currency = const("currency.default")
