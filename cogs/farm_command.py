@@ -308,7 +308,8 @@ class FarmCommand(Cog):
         crop_item.set_name(crop.name)
         crop_item.set_quality(crop.get_quality())
 
-        await ctx.send(f':potted_plant: __{crop.name}__{eul_reul(crop.name)} __{amount}개__ 수확했습니다!')
+        await ctx.send(f':potted_plant: __{crop.name}__{eul_reul(crop.name)} __{amount}개__ 수확했습니다! '
+                       f'(`{crop_item.item_data.id}`)')
 
     @command(name='뽑아내기', aliases=['pull', '뽑기'],
              help='밭에 심어져있는 작물을 뽑아냅니다. 뽑아낸 작물은 아이템을 드랍하지 않습니다.')
