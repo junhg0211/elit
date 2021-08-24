@@ -7,8 +7,7 @@ from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand,
     MissingRequiredArgument, CommandNotFound, BadArgument
 
 from elit import Player, new_player, Farm, get_player
-from elit.exception import InventoryCapacityError
-from elit.item import RecommendationCertificate
+from elit.item import Testimonial
 from util import const
 
 
@@ -69,6 +68,9 @@ class General(Cog):
         embed.add_field(name='서버 가입 일자', value=str(ctx.author.joined_at), inline=False)
         embed.add_field(name='소지금', value=f'__{player.money}{const("currency.default")}__')
         embed.add_field(name='소속되어있는 밭', value='(없음)' if farm is None else farm.get_channel(self.bot).mention)
+        if player.recommender_id:
+            user = self.bot.get_user(player.recommender_id)
+            embed.add_field(name='추천인', value=str(player.recommender_id) if user is None else str(user))
         embed.set_thumbnail(url=ctx.author.avatar_url)
 
         await ctx.send(embed=embed)
@@ -98,19 +100,26 @@ class General(Cog):
                            f'**자기 자신을 추천인으로 설정한 사람을 추천할 수 없어요!** *대박! 순환참조! 과연 누가 누구에게 추천했을까요?*')
             return
 
-        try:
-            recommender.get_inventory().earn_item(8)
-        except InventoryCapacityError:
+        if recommender.get_inventory().get_free_space() < 10:
             await ctx.send(f':love_letter: {ctx.author.mention} **__{user.display_name}__님의 인벤토리가 가득 차 있어요!!** '
-                           f'__{user.display_name}__님이 인벤토리를 비우면 다시 한 번 시도해주세요.')
+                           f'__{user.display_name}__님이 인벤토리를 비우면 다시 한 번 시도해주세요. '
+                           f'__{user.display_name}__님은 상장을 10개 받을 거에요!')
             return
-        else:
-            player.set_recommender(user.id)
+
+        if player.get_inventory().get_free_space() < 2:
+            await ctx.send(f':love_letter: {ctx.author.mention} **인벤토리가 가득 차 있어요!!** '
+                           f'{ctx.author.mention}님이 인벤토리를 비우면 다시 한 번 시도해주세요. '
+                           f'{ctx.author.mention}님은 상장을 2개 받을 거에요!')
+            return
+
+        recommender.get_inventory().earn_item(8, 10)
+        player.get_inventory().earn_item(8, 2)
+        player.set_recommender(user.id)
 
         await wait((
-            ctx.send(f':love_letter: 추천인이 __{user.display_name}__님으로 설정되었어요!'),
+            ctx.send(f':love_letter: 추천인이 __{user.display_name}__님으로 설정되었습니다! `{Testimonial.name}` 2개를 받았습니다.'),
             user.send(f':love_letter: __{ctx.author.display_name}__님이 __{user.display_name}__님을 '
-                      f'추천인으로 설정했어요! `{RecommendationCertificate.name}` 1개를 얻었어요.')
+                      f'추천인으로 설정했어요! `{Testimonial.name}` 10개를 얻었어요.')
         ))
 
 

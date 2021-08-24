@@ -58,7 +58,7 @@ class PlayerInventory:
             result += item.amount
         return result
 
-    def get_free_space(self) -> bool:
+    def get_free_space(self) -> int:
         """더 담을 수 있는 아이템 개수"""
         return self.size - self.get_capacity()
 
