@@ -46,4 +46,4 @@ class Seed(Item):
                                       f'`{crop_name}` __{amount}개__를 심었습니다.'), embed
 
     def get_prise_per_piece(self) -> int:
-        return 10
+        return 1
