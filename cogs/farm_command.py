@@ -234,7 +234,7 @@ class FarmCommand(Cog):
                        f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
                        f'> **인출한 금액** __{amount}{currency}__')
 
-    @group(name='작물', aliases=['crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
+    @group(name='작물', aliases=['농작물', 'crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
         if message := check_farm(ctx, self.bot):
             await ctx.send(message)
