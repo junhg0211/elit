@@ -71,7 +71,8 @@ class FarmCommand(Cog):
         embed.add_field(name='공동계좌', value=f'__{farm.money}{const("currency.default")}__')
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}: {", ".join(members)}', inline=False)
         if (entrance_channel := farm.get_external_entrance_channel(self.bot)) is not None:
-            embed.add_field(name='연결된 채널', value=f'{entrance_channel.guild.name} #{entrance_channel.name}')
+            embed.add_field(name='연결된 채널', value=f'{entrance_channel.guild.name} {entrance_channel.mention}\n'
+                                                 f'*만약 연결 채널이 있는 서버에 접속되어있지 않다면\n`#deleted-channel`로 나타납니다.*')
         if crop_names:
             embed.add_field(name='심은 작물', value=', '.join(crop_names), inline=False)
         embed.set_thumbnail(url=owner.avatar_url)
@@ -311,7 +312,7 @@ class FarmCommand(Cog):
     @farm.command(name='연결해제', aliases=['disconnect', '끊기'], help='외부 서버와의 연결을 끊습니다.',
                   description='서버 관리자 권한을 가지고 있는 사람 역시 이 커맨드를 사용할 수 있습니다.')
     async def disconnect(self, ctx: Context):
-        administrator = ctx.author.server_permissions.administrator
+        administrator = ctx.author.guild_permissions.administrator
 
         if administrator:
             farm = get_farm_by_entrance_id(ctx.channel.id)
@@ -342,7 +343,10 @@ class FarmCommand(Cog):
                 return
 
         farm.set_external_entrance_id(None)
-        await ctx.send(f':chains: {farm_channel.mention}의 연결이 해제되었습니다!!')
+        await wait((
+            ctx.send(f':chains: {farm_channel.mention}의 연결이 해제되었습니다!!'),
+            farm_channel.send(f':chains: {ctx.channel.mention}과의 연결이 해제되었습니다.')
+        ))
 
     @group(name='작물', aliases=['농작물', 'crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
