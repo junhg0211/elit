@@ -5,7 +5,7 @@ from discord.ext.commands import Cog, Bot, group, Context, command
 
 from elit import Farm, next_farm_id, new_farm, get_player, get_farm_by_channel_id, get_farm_by_entrance_id
 from elit.item import Crop
-from util import const, emoji_reaction_check, eul_reul, i_ga, wa_gwa
+from util import const, emoji_reaction_check, eul_reul, i_ga, wa_gwa, eun_neun
 
 
 def check_farm(ctx: Context, bot: Bot):
@@ -264,16 +264,14 @@ class FarmCommand(Cog):
 
         player = get_player(ctx.author.id)
         if not player.is_in_farm():
-            await ctx.send(f':chains: {ctx.author.mention} **밭이 없어요!** '
-                           f'연결할 밭이 없어요...')
+            await ctx.send(f':chains: {ctx.author.mention} **밭이 없어요!** 연결할 밭이 없어요...')
             return
 
         farm = player.get_farm()
 
-        # if farm.owner_id == ctx.author.id:
-        #     await ctx.send(f':chains: {ctx.author.mention} **밭 소유자가 아니에요!** '
-        #                    f'`엘 연결`은 밭의 소유자만 할 수 있습니다.')
-        #     return
+        if farm.owner_id != ctx.author.id:
+            await ctx.send(f':chains: {ctx.author.mention} **밭 소유자가 아니에요!** `엘 연결`은 밭의 소유자만 할 수 있습니다.')
+            return
         
         if (connected_farm := get_farm_by_entrance_id(ctx.channel.id)) is not None:
             await ctx.send(f':chains: {ctx.author.mention} **연결 채널에 연결할 수 없습니다!** '
@@ -310,9 +308,41 @@ class FarmCommand(Cog):
                               f'{farm_channel.mention}{wa_gwa(farm_channel.name)} 연결되었습니다!')
         ))
 
-    @farm.command(name='연결해제', aliases=['disconnect', '끊기'], help='외부 서버와의 연결을 끊습니다.')
+    @farm.command(name='연결해제', aliases=['disconnect', '끊기'], help='외부 서버와의 연결을 끊습니다.',
+                  description='서버 관리자 권한을 가지고 있는 사람 역시 이 커맨드를 사용할 수 있습니다.')
     async def disconnect(self, ctx: Context):
-        pass
+        administrator = ctx.author.server_permissions.administrator
+
+        if administrator:
+            farm = get_farm_by_entrance_id(ctx.channel.id)
+            if farm is None:
+                await ctx.send(':chains: **이 채널에는 연결이 없어요!**')
+                return
+
+            farm_channel = farm.get_channel(self.bot)
+        else:
+            player = get_player(ctx.author.id)
+
+            if not player.is_in_farm():
+                await ctx.send(f':chains: **{ctx.author.mention}님은 밭에 소속되어있지 않아요!** '
+                               f'`엘 밭` 명령어를 통해서 밭에 소속되는 방법을 알아보세요.')
+                return
+
+            farm = player.get_farm()
+
+            farm_channel = farm.get_channel(self.bot)
+            if farm.external_entrance_id is None:
+                await ctx.send(f':chains: **이미 연결이 해제되어있어요!** '
+                               f'{ctx.author.mention}님의 밭인 {farm_channel.mention}{eun_neun(farm_channel.name)} '
+                               f'다른 서버의 채널과 연결되어있지 않아요!')
+                return
+
+            if farm.owner_id != ctx.author.id:
+                await ctx.send(f':chains: **밭 소유자가 아니에요!** 밭 소유자만 연결을 해제할 수 있습니다.')
+                return
+
+        farm.set_external_entrance_id(None)
+        await ctx.send(f':chains: {farm_channel.mention}의 연결이 해제되었습니다!!')
 
     @group(name='작물', aliases=['농작물', 'crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
