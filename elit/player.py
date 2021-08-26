@@ -21,7 +21,7 @@ def next_item_id():
         return cursor.fetchall()[0][0]
 
 
-class PlayerInventory:
+class Inventory:
     def __init__(self, discord_id: int):
         self.discord_id = discord_id
         self.items: List[Item] = list()
@@ -85,7 +85,7 @@ class PlayerInventory:
                            'VALUES (%s, %s, %s, %s)', (self.discord_id, item_type, amount, item_id))
         return get_item_object(item_type, item_id), amount
 
-    def load_items(self) -> 'PlayerInventory':
+    def load_items(self) -> 'Inventory':
         with database.cursor() as cursor:
             cursor.execute('SELECT item_type, amount, item_id FROM inventory WHERE discord_id = %s', self.discord_id)
             items = cursor.fetchall()
@@ -132,8 +132,8 @@ class Player:
                            (self.recommender_id, self.discord_id))
         return self
 
-    def get_inventory(self) -> PlayerInventory:
-        return PlayerInventory(self.discord_id)
+    def get_inventory(self) -> Inventory:
+        return Inventory(self.discord_id)
 
     def set_money(self, amount: int) -> 'Player':
         """

@@ -14,7 +14,7 @@ def check_farm(ctx: Context, bot: Bot):
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 밭에 소속되어 있어야 해요!** ' \
                f'`엘 밭` 명령어를 통해 밭에 소속되는 방법을 알아보세요.'
     farm = Farm(player.farm_id)
-    if ctx.channel.id in (farm.channel_id, farm.external_entrance_id):
+    if ctx.channel.id in (farm.channel_id, farm.entrance_id):
         return False
     else:
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 자신이 소속되어있는 밭에 있어야 해요!** ' \
@@ -29,8 +29,8 @@ class FarmCommand(Cog):
     async def on_message(self, message: Message):
         if not message.content.startswith(':chains:'):
             if (farm := get_farm_by_channel_id(message.channel.id)) is not None:
-                if farm.external_entrance_id is not None:
-                    entrance_channel = self.bot.get_channel(farm.external_entrance_id)
+                if farm.entrance_id is not None:
+                    entrance_channel = self.bot.get_channel(farm.entrance_id)
                     await entrance_channel.send(f':chains: __{message.author.display_name}__: {message.content}',
                                                 embed=message.embeds[0] if message.embeds else None,
                                                 files=message.attachments)
@@ -332,7 +332,7 @@ class FarmCommand(Cog):
             farm = player.get_farm()
 
             farm_channel = farm.get_channel(self.bot)
-            if farm.external_entrance_id is None:
+            if farm.entrance_id is None:
                 await ctx.send(f':chains: **이미 연결이 해제되어있어요!** '
                                f'{ctx.author.mention}님의 밭인 {farm_channel.mention}{eun_neun(farm_channel.name)} '
                                f'다른 서버의 채널과 연결되어있지 않아요!')

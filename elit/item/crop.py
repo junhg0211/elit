@@ -3,7 +3,7 @@ from typing import Tuple, Optional
 from discord import Embed
 from discord.ext.commands import Bot, Context
 
-from elit.farm import get_prise
+from elit import get_prise
 from elit.item import Item
 from util import eul_reul, const, eun_neun
 
