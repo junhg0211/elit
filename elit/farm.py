@@ -185,7 +185,7 @@ class Farm:
         self.id = id_
 
         with database.cursor(DictCursor) as cursor:
-            cursor.execute('SELECT money, owner_id, `size`, channel_id, capacity FROM farm WHERE farm_id = %s', self.id)
+            cursor.execute('SELECT * FROM farm WHERE farm_id = %s', self.id)
             data = cursor.fetchall()
         if not data:
             raise ValueError('해당 ID를 가진 밭에 대한 정보가 존재하지 않습니다.')
@@ -197,9 +197,30 @@ class Farm:
         self.size = data['size']
         self.channel_id = data['channel_id']
         self.capacity = data['capacity']
+        self.external_entrance_id = data['external_entrance_id']
 
     def get_channel(self, bot: Bot) -> TextChannel:
         return bot.get_channel(self.channel_id)
+
+    def get_external_entrance_channel(self, bot: Bot) -> Optional[TextChannel]:
+        if self.external_entrance_id is None:
+            return
+        if (channel := bot.get_channel(self.external_entrance_id)) is None:
+            self.set_external_entrance_id(None)
+            return
+        return channel
+
+    def set_external_entrance_id(self, channel_id: Optional[int]) -> 'Farm':
+        if channel_id is None:
+            self.channel_id = None
+            with database.cursor() as cursor:
+                cursor.execute('UPDATE farm SET external_entrance_id = NULL WHERE farm_id = %s', self.id)
+            return self
+        else:
+            self.channel_id = channel_id
+            with database.cursor() as cursor:
+                cursor.execute('UPDATE farm SET external_entrance_id = %s WHERE farm_id = %s', (channel_id, self.id))
+            return self
 
     def get_owner(self, bot: Bot) -> User:
         return bot.get_user(self.owner_id)
@@ -284,6 +305,24 @@ def new_farm(farm_id: int, owner_id: int, channel_id: int) -> Farm:
     with database.cursor(DictCursor) as cursor:
         cursor.execute('INSERT INTO farm(farm_id, owner_id, channel_id) VALUES (%s, %s, %s)',
                        (farm_id, owner_id, channel_id))
+    return Farm(farm_id)
+
+
+def get_farm_by_channel_id(channel_id: int) -> Optional[Farm]:
+    with database.cursor() as cursor:
+        cursor.execute('SELECT farm_id FROM farm WHERE channel_id = %s', channel_id)
+        if not bool(data := cursor.fetchall()):
+            return
+    farm_id = data[0][0]
+    return Farm(farm_id)
+
+
+def get_farm_by_entrance_id(channel_id: int) -> Optional[Farm]:
+    with database.cursor() as cursor:
+        cursor.execute('SELECT farm_id FROM farm WHERE external_entrance_id = %s', channel_id)
+        if not bool(data := cursor.fetchall()):
+            return
+    farm_id = data[0][0]
     return Farm(farm_id)
 
 
