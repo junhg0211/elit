@@ -38,6 +38,12 @@ class Inventory:
     def __bool__(self) -> bool:
         return bool(self.items)
 
+    def set_size(self, size: int) -> 'Inventory':
+        self.size = size
+        with database.cursor() as cursor:
+            cursor.execute('UPDATE player SET inventory_size = %s WHERE discord_id = %s', (self.size, self.discord_id))
+        return self
+
     def has_item(self, item_id: int) -> bool:
         """이 아이템을 가지고 있는지 확인합니다."""
         for item in self.items:

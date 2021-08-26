@@ -56,6 +56,11 @@ class Item:
             return data[0][0]
 
     def get_prise_per_piece(self) -> int:
+        """
+        아이템 하나 판매 시 가격을 반환합니다.
+
+        :return: 아이템 한 개 판매 시 가격
+        """
         return 0
 
     def apply_use(self, amount: int, use_message: str) -> str:
