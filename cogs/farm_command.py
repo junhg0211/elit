@@ -2,7 +2,6 @@ from asyncio import TimeoutError as AsyncioTimeoutError, wait
 
 from discord import Embed, User, DMChannel, Message
 from discord.ext.commands import Cog, Bot, group, Context, command
-from sqlalchemy.log import echo_property
 
 from elit import Farm, next_farm_id, new_farm, get_player, get_farm_by_channel_id, get_farm_by_entrance_id
 from elit.item import Crop
