@@ -1,4 +1,5 @@
 from asyncio import TimeoutError as AsyncioTimeoutError, wait
+from typing import Union
 
 from discord import Embed, User, DMChannel, Message
 from discord.ext.commands import Cog, Bot, group, Context, command
@@ -8,7 +9,12 @@ from elit.item import Crop
 from util import const, emoji_reaction_check, eul_reul, i_ga, wa_gwa, eun_neun
 
 
-def check_farm(ctx: Context, bot: Bot):
+def check_farm(ctx: Context, bot: Bot) -> Union[str, bool]:
+    """
+    현재 채팅을 하고 있는 서버가 해당 플레이어 소속의 밭인지를 확인합니다.
+    만약 해당 플레이어의 소속 밭이 아닌 곳에서 이 함수가 실행된다면, 그 상황에 맞는 오류 메시지가 출력됩니다.
+    만약 해당 플레이어의 소속 밭에서 이 함수가 실행된다면, `False`가 출력됩니다.
+    """
     player = get_player(ctx.author.id)
     if not player.is_in_farm():
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 밭에 소속되어 있어야 해요!** ' \
@@ -81,6 +87,13 @@ class FarmCommand(Cog):
 
     @farm.command(name='생성', aliases=['create'], help='새로운 밭을 생성합니다.')
     async def create(self, ctx: Context):
+        if ctx.guild.id != const('guild.elitas'):
+            await ctx.send(f':park: {ctx.author.mention} **여기서 밭을 만들 수 없어요!** '
+                           '밭을 생성하기 위해서는 엘리타스 서버에 가입해주세요. 텍스트 채널을 만들어야 하기 때문이에요.\n'
+                           '엘리타스 서버에 접속한 후에도 `엘 밭 연결`을 통해서 밭을 다른 서버에 연결할 수 있습니다. '
+                           '`엘 서버`를 통해서 엘리타스 서버에 접속해보세요!')
+            return
+
         player = get_player(ctx.author.id)
 
         if player.farm_id is not None:

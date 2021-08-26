@@ -4,7 +4,7 @@ from discord import Embed
 from discord.ext.commands import Bot, Context
 
 from elit.item import Item
-from util import eul_reul, euro
+from util import eul_reul
 
 
 class InventorySizeSpell(Item):
