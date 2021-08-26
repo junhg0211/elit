@@ -363,11 +363,13 @@ class FarmCommand(Cog):
 
     @group(name='작물', aliases=['농작물', 'crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):
-        if message := check_farm(ctx, self.bot):
-            await ctx.send(message)
-            return
+        player = get_player(ctx.author.id)
 
-        farm = get_player(ctx.author.id).get_farm()
+        if not player.is_in_farm():
+            await ctx.send(f':potted_plant: {ctx.author.mention} **밭에 소속되어있지 않아요!** '
+                           f'`엘 밭`을 통해서 밭에 가입하는 방법을 알아보세요.')
+            return
+        farm = player.get_farm()
 
         if crop_name:
             crop = farm.get_planted_crop_by_name(crop_name)
@@ -395,15 +397,18 @@ class FarmCommand(Cog):
 
     @crop.command(name='자세히', aliases=['specific'], help='작물 정보를 자세히 표시합니다.')
     async def specific(self, ctx: Context):
-        if message := check_farm(ctx, self.bot):
-            await ctx.send(message)
-            return
+        player = get_player(ctx.author.id)
 
-        farm = get_player(ctx.author.id).get_farm()
+        if not player.is_in_farm():
+            await ctx.send(f':potted_plant: {ctx.author.mention} **밭에 소속되어있지 않아요!** '
+                           f'`엘 밭`을 통해서 밭에 가입하는 방법을 알아보세요.')
+            return
+        farm = player.get_farm()
         farm_channel = farm.get_channel(self.bot)
 
         not_crop = True
-        embed = Embed(title='밭 작물 자세히 보기', description=farm_channel.mention, color=const('color.farm'))
+        embed = Embed(title='밭 작물 자세히 보기', description=f'{farm_channel.mention} (밭 ID: {farm.id})',
+                      color=const('color.farm'))
         for crop in farm.get_crops():
             name, value = crop.get_line()
             embed.add_field(name=name, value=value, inline=False)
@@ -416,11 +421,12 @@ class FarmCommand(Cog):
 
     @command(name='수확', aliases=['추수', 'harvest'], help='밭에 있는 작물을 수확합니다.')
     async def harvest(self, ctx: Context, *, crop_name: str):
-        if message := check_farm(ctx, self.bot):
-            await ctx.send(message)
-            return
-
         player = get_player(ctx.author.id)
+
+        if not player.is_in_farm():
+            await ctx.send(f':potted_plant: {ctx.author.mention} **밭에 소속되어있지 않아요!** '
+                           f'`엘 밭`을 통해서 밭에 가입하는 방법을 알아보세요.')
+            return
         farm = player.get_farm()
 
         try:
@@ -442,6 +448,11 @@ class FarmCommand(Cog):
              help='밭에 심어져있는 작물을 뽑아냅니다. 뽑아낸 작물은 아이템을 드랍하지 않습니다.')
     async def pull(self, ctx: Context, *, crop_name: str):
         player = get_player(ctx.author.id)
+
+        if not player.is_in_farm():
+            await ctx.send(f':potted_plant: {ctx.author.mention} **밭에 소속되어있지 않아요!** '
+                           f'`엘 밭`을 통해서 밭에 가입하는 방법을 알아보세요.')
+            return
         farm = player.get_farm()
         try:
             farm.pull(crop_name)
