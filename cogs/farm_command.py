@@ -296,8 +296,9 @@ class FarmCommand(Cog):
         await confirmation.add_reaction(const("emoji.white_check_mark"))
 
         try:
-            self.bot.wait_for('reaction_add', timeout=60,
-                              check=emoji_reaction_check(confirmation, const('emoji.white_check_mark'), ctx.author))
+            await self.bot.wait_for('reaction_add', timeout=60,
+                                    check=emoji_reaction_check(confirmation, const('emoji.white_check_mark'),
+                                                               ctx.author))
         except AsyncioTimeoutError:
             await confirmation.edit(content=f':chains: 시간이 초과되어 연결 작업이 취소되었습니다.')
             return
