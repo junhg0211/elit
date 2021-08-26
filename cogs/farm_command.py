@@ -1,11 +1,12 @@
-from asyncio import TimeoutError as AsyncioTimeoutError
+from asyncio import TimeoutError as AsyncioTimeoutError, wait
 
-from discord import Embed, User
+from discord import Embed, User, DMChannel, Message
 from discord.ext.commands import Cog, Bot, group, Context, command
+from sqlalchemy.log import echo_property
 
-from elit import Farm, next_farm_id, new_farm, get_player
+from elit import Farm, next_farm_id, new_farm, get_player, get_farm_by_channel_id, get_farm_by_entrance_id
 from elit.item import Crop
-from util import const, emoji_reaction_check, eul_reul, i_ga
+from util import const, emoji_reaction_check, eul_reul, i_ga, wa_gwa
 
 
 def check_farm(ctx: Context, bot: Bot):
@@ -14,7 +15,7 @@ def check_farm(ctx: Context, bot: Bot):
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 밭에 소속되어 있어야 해요!** ' \
                f'`엘 밭` 명령어를 통해 밭에 소속되는 방법을 알아보세요.'
     farm = Farm(player.farm_id)
-    if ctx.channel.id == farm.channel_id:
+    if ctx.channel.id in (farm.channel_id, farm.external_entrance_id):
         return False
     else:
         return f':park: {ctx.author.mention} **이 명령어를 사용하기 위해서는 자신이 소속되어있는 밭에 있어야 해요!** ' \
@@ -24,6 +25,21 @@ def check_farm(ctx: Context, bot: Bot):
 class FarmCommand(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    @Cog.listener()
+    async def on_message(self, message: Message):
+        if message.author == self.bot.user:
+            return
+
+        if farm := get_farm_by_channel_id(message.channel.id) is not None:
+            if farm.external_entrance_id is not None:
+                entrance_channel = self.bot.get_channel(farm.external_entrance_id)
+                await entrance_channel.send(f'__{message.author.display_name}__: {message.content}',
+                                            embed=message.embeds[0], files=message.attachments)
+        elif farm := get_farm_by_entrance_id(message.channel.id) is not None:
+            farm_channel = self.bot.get_channel(farm.channel_id)
+            await farm_channel.send(f'__{message.author.display_name}__: {message.content}',
+                                    embed=message.embeds[0], files=message.attachments)
 
     @group(name='밭', aliases=['farm'], help='자신의 밭 정보를 확인합니다.', invoke_without_command=True)
     async def farm(self, ctx: Context):
@@ -55,6 +71,8 @@ class FarmCommand(Cog):
         embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)')
         embed.add_field(name='공동계좌', value=f'__{farm.money}{const("currency.default")}__')
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}: {", ".join(members)}', inline=False)
+        if entrance_channel := farm.get_external_entrance_channel(self.bot) is not None:
+            embed.add_field(name='연결된 채널', value=f'{entrance_channel.guild.name} #{entrance_channel.name}')
         if crop_names:
             embed.add_field(name='심은 작물', value=', '.join(crop_names), inline=False)
         embed.set_thumbnail(url=owner.avatar_url)
@@ -233,6 +251,68 @@ class FarmCommand(Cog):
                        f'> **이전 계좌 금액** __{previous_money}{currency}__\n'
                        f'> **현재 계좌 금액** __{farm.money}{currency}__\n'
                        f'> **인출한 금액** __{amount}{currency}__')
+
+    @farm.command(name='연결', aliases=['connect'], help='밭을 외부 서버와 연결합니다.')
+    async def connect(self, ctx: Context):
+        if ctx.channel.guild.id == const('guild.elitas'):
+            await ctx.send(f':chains: {ctx.author.mention} **엘리타스 내부에서는 밭을 연결할 수 없어요!** '
+                           f'`엘 연결`은 서버 밖의 채널에서 밭에 접근하기 위해서 사용합니다.')
+            return
+
+        if isinstance(ctx.channel, DMChannel):
+            await ctx.send(f':chains: {ctx.author.mention} **DM 채널에는 밭을 연결할 수 없어요!**')
+            return
+
+        player = get_player(ctx.author.id)
+        if not player.is_in_farm():
+            await ctx.send(f':chains: {ctx.author.mention} **밭이 없어요!** '
+                           f'연결할 밭이 없어요...')
+            return
+
+        farm = player.get_farm()
+
+        # if farm.owner_id == ctx.author.id:
+        #     await ctx.send(f':chains: {ctx.author.mention} **밭 소유자가 아니에요!** '
+        #                    f'`엘 연결`은 밭의 소유자만 할 수 있습니다.')
+        #     return
+        
+        if farm := get_farm_by_entrance_id(ctx.channel.id) is not None:
+            await ctx.send(f':chains: {ctx.author.mention} **연결 채널에 연결할 수 없습니다!** '
+                           f'이 채널은 이미 __밭-{farm.id}__{wa_gwa(farm.id)} 연결되어 있습니다.')
+            return
+
+        farm_channel = farm.get_channel(self.bot)
+
+        confirmation = await ctx.send(f':chains: 엘리타스의 __#{farm_channel.name}__{eul_reul(farm_channel.name)} '
+                                      f'__{ctx.guild.name} {ctx.channel.mention}__에 연결하려고 합니다. '
+                                      f'**밭이 연결되면 다음과 같은 일이 일어납니다**:\n'
+                                      f'> 이 채널에서 입력된 모든 메시지가 엘리타스의 __{farm_channel.name}__ 채널에 전송됩니다.\n'
+                                      f'> 엘리타스의 __{farm_channel.name}__ 채널에서 입력된 모든 메시지가 이 채널에 전송됩니다.\n'
+                                      f'> 엘리타스의 __{farm_channel.name}__ 채널에 이 채널과 밭이 연결되었다는 메시지가 전송됩니다.\n'
+                                      f'> 이 채널이 __{farm_channel.name}__의 다른 위치로 기록되어,'
+                                      f' 이 채널에서 밭에 있는 것과 동일한 작업을 수행할 수 있습니다.\n'
+                                      f'> `엘 연결취소`를 통해서 언제나 밭과 이 채널의 연결을 취소할 수 있습니다.\n'
+                                      f'상기된 내용에 동의하신다면 {const("emoji.white_check_mark")}를 눌러주세요. '
+                                      f'작업을 취소하려면 아무것도 하지 않으면 됩니다.')
+        await confirmation.add_reaction(const("emoji.white_check_mark"))
+
+        try:
+            self.bot.wait_for('reaction_add', timeout=60,
+                              check=emoji_reaction_check(confirmation, const('emoji.white_check_mark'), ctx.author))
+        except AsyncioTimeoutError:
+            await confirmation.edit(content=f':chains: 시간이 초과되어 연결 작업이 취소되었습니다.')
+            return
+
+        farm.set_external_entrance_id(ctx.channel.id)
+        await wait((
+            ctx.send(f':chains: **{ctx.channel.mention}{i_ga(ctx.channel.name)} __{farm_channel.name}__에 연결되었습니다!**'),
+            farm_channel.send(f':chains: __{ctx.guild.name}__의 __{ctx.channel.name}__ 채널이 '
+                              f'{farm_channel.mention}{wa_gwa(farm_channel.name)} 연결되었습니다!')
+        ))
+
+    @farm.command(name='연결해제', aliases=['disconnect', '끊기'], help='외부 서버와의 연결을 끊습니다.')
+    async def disconnect(self, ctx: Context):
+        pass
 
     @group(name='작물', aliases=['농작물', 'crop'], help='밭에 심어진 작물 정보를 확인합니다.', invoke_without_command=True)
     async def crop(self, ctx: Context, *, crop_name: str = ''):

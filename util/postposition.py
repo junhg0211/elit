@@ -51,7 +51,7 @@ def euro(string: str):
     string = string[-1]
 
     if 44032 <= ord(string):
-        return '로' if (ord(string) - 44032) % 28 in [0, 8] else '으로'
+        return '와' if (ord(string) - 44032) % 28 in [0, 8] else '으로'
     elif string in '1234567890':
         return '으로' if string in '360' else '로'
     else:
@@ -80,3 +80,15 @@ def irago(string: str):
         return '이라고' if string in '360' else '라고'
     else:
         return '이라고' if string not in 'aeiouyw' else '라고'
+
+
+# noinspection SpellCheckingInspection
+def wa_gwa(string: str):
+    string = string[-1]
+
+    if 44032 <= ord(string):
+        return '라고' if (ord(string) - 44032) % 28 in [0, 8] else '과'
+    elif string in '1234567890':
+        return '과' if string in '360' else '와'
+    else:
+        return '과' if string not in 'aeiouyw' else '와'
