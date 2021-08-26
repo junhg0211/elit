@@ -122,6 +122,11 @@ class General(Cog):
                       f'추천인으로 설정했어요! `{Testimonial.name}` 10개를 얻었어요.')
         ))
 
+    @command(name='서버', aliases=['server'], help='엘리타스로 가는 문을 엽니다.')
+    async def server(self, ctx: Context):
+        await ctx.send('<:elit_background:880409599138730015> 다음 링크를 클릭해서 엘리타스 서버에 접속해보세요!!\n'
+                       '> https://discord.gg/UHBuF5Z5RF')
+
 
 def setup(bot: Bot):
     bot.add_cog(General(bot))
