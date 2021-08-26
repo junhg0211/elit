@@ -28,18 +28,18 @@ class FarmCommand(Cog):
 
     @Cog.listener()
     async def on_message(self, message: Message):
-        if message.author == self.bot.user:
-            return
-
-        if farm := get_farm_by_channel_id(message.channel.id) is not None:
-            if farm.external_entrance_id is not None:
-                entrance_channel = self.bot.get_channel(farm.external_entrance_id)
-                await entrance_channel.send(f'__{message.author.display_name}__: {message.content}',
-                                            embed=message.embeds[0], files=message.attachments)
-        elif farm := get_farm_by_entrance_id(message.channel.id) is not None:
-            farm_channel = self.bot.get_channel(farm.channel_id)
-            await farm_channel.send(f'__{message.author.display_name}__: {message.content}',
-                                    embed=message.embeds[0], files=message.attachments)
+        if not message.content.startswith(':chains:'):
+            if (farm := get_farm_by_channel_id(message.channel.id)) is not None:
+                if farm.external_entrance_id is not None:
+                    entrance_channel = self.bot.get_channel(farm.external_entrance_id)
+                    await entrance_channel.send(f':chains: __{message.author.display_name}__: {message.content}',
+                                                embed=message.embeds[0] if message.embeds else None,
+                                                files=message.attachments)
+            elif (farm := get_farm_by_entrance_id(message.channel.id)) is not None:
+                farm_channel = self.bot.get_channel(farm.channel_id)
+                await farm_channel.send(f':chains: __{message.author.display_name}__: {message.content}',
+                                        embed=message.embeds[0] if message.embeds else None,
+                                        files=message.attachments)
 
     @group(name='밭', aliases=['farm'], help='자신의 밭 정보를 확인합니다.', invoke_without_command=True)
     async def farm(self, ctx: Context):
@@ -71,7 +71,7 @@ class FarmCommand(Cog):
         embed.add_field(name='용량', value=f'{farm_using}/{farm.size} ({farm_using / farm.size * 100:.2f}% 사용중)')
         embed.add_field(name='공동계좌', value=f'__{farm.money}{const("currency.default")}__')
         embed.add_field(name='인원', value=f'{farm.member_count()}/{farm.capacity}: {", ".join(members)}', inline=False)
-        if entrance_channel := farm.get_external_entrance_channel(self.bot) is not None:
+        if (entrance_channel := farm.get_external_entrance_channel(self.bot)) is not None:
             embed.add_field(name='연결된 채널', value=f'{entrance_channel.guild.name} #{entrance_channel.name}')
         if crop_names:
             embed.add_field(name='심은 작물', value=', '.join(crop_names), inline=False)
@@ -276,9 +276,9 @@ class FarmCommand(Cog):
         #                    f'`엘 연결`은 밭의 소유자만 할 수 있습니다.')
         #     return
         
-        if farm := get_farm_by_entrance_id(ctx.channel.id) is not None:
+        if (connected_farm := get_farm_by_entrance_id(ctx.channel.id)) is not None:
             await ctx.send(f':chains: {ctx.author.mention} **연결 채널에 연결할 수 없습니다!** '
-                           f'이 채널은 이미 __밭-{farm.id}__{wa_gwa(farm.id)} 연결되어 있습니다.')
+                           f'이 채널은 이미 __밭-{connected_farm.id}__{wa_gwa(str(connected_farm.id))} 연결되어 있습니다.')
             return
 
         farm_channel = farm.get_channel(self.bot)
