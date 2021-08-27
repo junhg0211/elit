@@ -3,8 +3,8 @@ from asyncio import wait
 from datetime import datetime
 
 from discord import Embed, User
-from discord.ext.commands import Cog, Bot, command, Context, DefaultHelpCommand, CommandError, \
-    MissingRequiredArgument, CommandNotFound, BadArgument
+from discord.ext.commands import Cog, Bot, command, Context, CommandError, \
+    MissingRequiredArgument, CommandNotFound, BadArgument, Command
 
 from elit import Player, new_player, Farm, get_player
 from elit.item import Testimonial
@@ -15,13 +15,7 @@ class General(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-        self.bot.help_command.command_attrs.update({
-            'name': '도움말',
-            'aliases': ['help'],
-            'description': '명령어 목록을 보고 도움말을 표시합니다.',
-            'help': ''
-        })
-        bot.help_command = DefaultHelpCommand(command_attrs=self.bot.help_command.command_attrs)
+        self.bot.remove_command('help')
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: CommandError):
@@ -47,6 +41,37 @@ class General(Cog):
             print(f'{datetime.now()} `{ctx.guild} #{ctx.channel}`에서 오류 발생이 감지되었습니다.\n'
                   f'\t메시지 내용: {repr(ctx.message.content)}')
             traceback.print_exception(error.__class__, error, error.__traceback__)
+
+    @command(name='도움말', aliases=['명령어', 'help', 'command'], help='명령어 목록을 보고 도움말을 표시합니다.')
+    async def help(self, ctx: Context, *, command_name: str = ''):
+        if command_name:
+            command_: Command = self.bot.get_command(command_name)
+            embed = Embed(title='명령어 사용법', description=f'엘 {command_.qualified_name}', color=const('color.elit'))
+            if command_.aliases:
+                embed.add_field(name='다른 이름', value='`' + '`, `'.join(command_.aliases) + '`', inline=False)
+            if command_.help:
+                embed.add_field(name='설명', value=command_.help, inline=False)
+            if command_.description:
+                embed.add_field(name='참고', value=command_.description, inline=False)
+            if command_.signature:
+                embed.add_field(name='사용법', value=f'```\n엘 {command_.qualified_name} {command_.signature}\n```',
+                                inline=False)
+            subcommands = [subcommand for subcommand in self.bot.walk_commands() if command_ == (subcommand.parents[0] if subcommand.parents else None)]
+            if subcommands:
+                embed.add_field(name='서브커맨드',
+                                value='`' + '`, `'.join(subcommand.name for subcommand in subcommands) + '`')
+
+        else:
+            embed = Embed(title='명령어 목록', color=const('color.elit'))
+            for cog_name in self.bot.cogs:
+                cog: Cog = self.bot.get_cog(cog_name)
+                lines = list()
+                for command_ in cog.get_commands():
+                    lines.append(f'`{command_.qualified_name}`: {command_.help}')
+                embed.add_field(name=cog_name, value='\n'.join(lines), inline=False)
+
+        embed.set_thumbnail(url=ctx.guild.icon_url)
+        await ctx.send(embed=embed)
 
     @command(name='핑', aliases=['ping'], help='핑퐁! 핑(지연 시간)을 확인합니다.')
     async def ping(self, ctx: Context):
