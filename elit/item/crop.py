@@ -28,7 +28,7 @@ class Crop(Item):
                f'`{self.name}`{eun_neun(self.name)} <#{const("text_channel.shop")}>에서 판매하자!', None
 
     def get_prise_per_piece(self) -> int:
-        return get_prise(self.name)
+        return int(get_prise(self.name) * self.get_quality())
 
     def set_name(self, name: str) -> 'Crop':
         self.name = name
