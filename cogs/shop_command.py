@@ -99,7 +99,7 @@ class Shop(Cog):
 
         item, amount = player.set_money(player.money - buy_prise).get_inventory().earn_item(item_type, amount)
         await ctx.send(f':shopping_cart: __{buy_prise}{currency}__{eul_reul(currency)} 주고 '
-                       f'__{item.name}__{eul_reul(item.name)} __{amount} 개__ 구매했습니다!')
+                       f'__{item.name}__{eul_reul(item.name)} __{amount} 개__ 구매했습니다! (`{item.item_data.id}`)')
 
     @group(name='메뉴', aliases=['menu', '구매목록'], help='구매 가능한 아이템 목록을 확인합니다.', invoke_without_command=True)
     async def menu(self, ctx: Context):
