@@ -91,11 +91,29 @@ class Crop:
     def get_grade_duration(self) -> timedelta:
         return get_grade_duration(self.get_grade())
 
+    def get_prise_per_amount(self) -> int:
+        """
+        작물 개당 현재 가격
+        """
+        return round(self.get_maximum_prise_per_amount() * self.get_quality())
+
     def get_prise(self) -> int:
+        """
+        작물 ``self.amount`` 개의 현재 가격
+        """
         return round(self.get_maximum_prise() * self.get_quality())
 
+    def get_maximum_prise_per_amount(self) -> int:
+        """
+        작물의 개당 최고가
+        """
+        return int(get_prise(self.name))
+
     def get_maximum_prise(self) -> int:
-        return int(get_prise(self.name)) * self.amount
+        """
+        작물 ``self.amount`` 개의 최고 가격
+        """
+        return self.get_maximum_prise_per_amount() * self.amount
 
     def get_quality(self):
         now = datetime.now()
@@ -151,13 +169,16 @@ class Crop:
         return name, value
 
     def get_embed(self) -> Embed:
+        currency = const("currency.default")
         embed = Embed(title='작물 정보', color=const('color.crop'))
         embed.add_field(name='이름', value=self.name)
         embed.add_field(name='심은 개수', value=f'{self.amount}개')
         embed.add_field(name='현재 품질', value=f'__{self.get_quality() * 100:.2f}%__ {self.quality_derivative_emoji()}')
         embed.add_field(name='심은 날짜', value=str(self.planted_at))
-        embed.add_field(name='현재 가격', value=f'{self.get_prise()}{const("currency.default")}')
-        embed.add_field(name='최고 가격', value=f'{self.get_maximum_prise()}{const("currency.default")}')
+        embed.add_field(name='현재 가격',
+                        value=f'{self.get_prise()}{currency} (개당 {self.get_prise_per_amount()}{currency})')
+        embed.add_field(name='최고 가격', value=f'{self.get_maximum_prise()}{currency} '
+                                            f'(개당 {self.get_maximum_prise_per_amount()}{currency})')
         embed.add_field(name='작물 등급', value=f'**{self.get_grade_name()}** (익은 후 {self.get_grade_duration()}간 최상 품질)',
                         inline=False)
         embed.add_field(name='최상 품질 재배 기간',
