@@ -5,6 +5,7 @@ from datetime import datetime
 from discord import Embed, User
 from discord.ext.commands import Cog, Bot, command, Context, CommandError, \
     MissingRequiredArgument, CommandNotFound, BadArgument, Command
+from discord_slash.cog_ext import cog_slash
 
 from elit import Player, new_player, Farm, get_player
 from elit.item import Testimonial
@@ -73,7 +74,11 @@ class General(Cog):
         embed.set_thumbnail(url=ctx.guild.icon_url)
         await ctx.send(embed=embed)
 
-    @command(name='핑', aliases=['ping'], help='핑퐁! 핑(지연 시간)을 확인합니다.')
+    @cog_slash(
+        name='핑',
+        description='핑퐁! 핑(지연 시간)을 확인합니다.',
+        guild_ids=const('guilds')
+    )
     async def ping(self, ctx: Context):
         await ctx.send(f':ping_pong: 핑퐁! (핑: {self.bot.latency * 1000:.3f}ms)')
 
